@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.test.test.ui.PinActivity"
+    tools:context=".AudioPinEnrollmentActivity"
     android:background="@android:color/darker_gray">
 
     <TextView
@@ -170,7 +170,18 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:weightSum="5.1">
+        android:weightSum="3">
+
+        <Button
+            android:text="*"
+            android:layout_width="wrap_content"
+            android:layout_height="80dp"
+            android:layout_weight="1"
+            android:layout_marginLeft="-3dip"
+            android:layout_marginRight="-3dip"
+            android:layout_marginTop="-5dip"
+            android:layout_marginBottom="-5dip"
+            android:id="@+id/buttonStar" />
 
         <Button
             android:text="0"
@@ -184,15 +195,26 @@
             android:id="@+id/button0" />
 
         <Button
-            android:text="OK"
+            android:text="#"
             android:layout_width="wrap_content"
             android:layout_height="80dp"
-            android:layout_weight="4.1"
+            android:layout_weight="1"
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
             android:layout_marginBottom="-5dip"
-            android:id="@+id/buttonOk" />
+            android:id="@+id/buttonHash" />
+
+        <!--<Button-->
+            <!--android:text="OK"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="80dp"-->
+            <!--android:layout_weight="4.1"-->
+            <!--android:layout_marginLeft="-3dip"-->
+            <!--android:layout_marginRight="-3dip"-->
+            <!--android:layout_marginTop="-5dip"-->
+            <!--android:layout_marginBottom="-5dip"-->
+            <!--android:id="@+id/buttonOk" />-->
 
     </LinearLayout>
 
