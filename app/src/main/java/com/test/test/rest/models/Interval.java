@@ -7,13 +7,10 @@ public class Interval {
     public final String phrase;
     public final Long start;
     public final Long end;
-    public final Integer time_correction;
 
-    public Interval(String phrase, Long start, Long end,
-                    Integer time_correction){
+    public Interval(String phrase, Long start, Long end){
         this.phrase = phrase;
         this.start = start;
         this.end = end;
-        this.time_correction = time_correction;
     }
 }

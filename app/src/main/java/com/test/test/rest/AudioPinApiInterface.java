@@ -24,7 +24,6 @@ public interface AudioPinApiInterface {
     @POST("/api/v1/auth")
     Call<Object> authToken(@Body AuthRequest authRequest);
 
-
     @POST("/api/v1/auth")
     Call<AuthResponse> getAuthToken(@Body AuthRequest authRequest);
 
@@ -33,36 +32,11 @@ public interface AudioPinApiInterface {
                                                 @Body EnrollmentInfo enrollmentInfo);
     @Multipart
     @PUT("/api/v1/enrollments/{id}")
-    Call<ResponseBody> uploadEnrollmentAudio(@Header("Authorization") String authorization,
+    Call<ResponseBody> uploadEnrollmentAudio2(@Header("Authorization") String authorization,
                                              @Path("id") String id,
                                              @Part("animation_start") String start,
                                              @Part("intervals") RequestBody intervals,
-                                             @Part("enrollment.aac\"; filename=\"blob") RequestBody body,
-                                             @Part("file") String file
-    );
-
-//    @Multipart
-//    @PUT("/api/v1/enrollments/{client_id}")
-//    Call<Object> uploadEnrollmentAudio(@Header("Authorization") String authorization,
-//                                       @Path("client_id") String clientId,
-//                                       @Part("animation_start") Long animationStart,
-//                                       @Part("intervals") Interval interval[],
-//                                       @Part("file") String file,
-//                                       @Part ("filename") Object fileName);
-
-
-    //@Multipart
-
-//    @PUT("/api/v1/enrollments/{client_id}")
-//    Call<Object> uploadEnrollmentAudio(@Header("Authorization") String authorization,
-//                                       @Path("client_id") String clientId,
-//                                       @Body EnrollmentAudioRequest request);
-
-//    @PUT("/api/v1/enrollments/{client_id}")
-//    Call<Object> uploadEnrollmentAudio(@Header("Authorization") String authorization,
-//                                       @Path("client_id") String clientId,
-//                                       @Body Int request);
-
-
+                                             @Part("enrollment.wav\"; filename=\"blob") RequestBody body,
+                                             @Part("file") String file);
 
 }

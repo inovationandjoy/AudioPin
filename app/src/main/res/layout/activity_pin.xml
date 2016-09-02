@@ -25,11 +25,23 @@
         android:layout_height="wrap_content">
 
         <Switch
-            android:text="M/F"
-            android:layout_width="100dp"
+            android:text="M"
+            android:layout_width="70dp"
             android:layout_height="50dp"
+            android:layout_marginLeft="20dp"
             android:layout_gravity="left"
             android:id="@+id/switchMaleFemale" />
+        <!--<Spinner-->
+            <!--android:id="@+id/male_female_spinner"-->
+            <!--android:layout_width="50dp"-->
+            <!--android:layout_height="50dp"-->
+            <!--android:layout_marginLeft="20dp"-->
+            <!--android:layout_gravity="center"/>-->
+        <View
+            android:layout_width="20dp"
+            android:layout_height="50dp"
+            android:background="@android:color/darker_gray"
+            />
 
         <TextView
             android:id="@+id/pinView"
@@ -204,18 +216,24 @@
             android:layout_marginTop="-5dip"
             android:layout_marginBottom="-5dip"
             android:id="@+id/buttonHash" />
-
-        <!--<Button-->
-            <!--android:text="OK"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="80dp"-->
-            <!--android:layout_weight="4.1"-->
-            <!--android:layout_marginLeft="-3dip"-->
-            <!--android:layout_marginRight="-3dip"-->
-            <!--android:layout_marginTop="-5dip"-->
-            <!--android:layout_marginBottom="-5dip"-->
-            <!--android:id="@+id/buttonOk" />-->
-
     </LinearLayout>
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="1">
+
+        <Button
+            android:text="Finish"
+            android:layout_width="wrap_content"
+            android:layout_height="80dp"
+            android:layout_weight="1"
+            android:layout_marginLeft="-3dip"
+            android:layout_marginRight="-3dip"
+            android:layout_marginTop="-5dip"
+            android:layout_marginBottom="-5dip"
+            android:id="@+id/buttonFinish" />
+
+    </LinearLayout>
 </LinearLayout>

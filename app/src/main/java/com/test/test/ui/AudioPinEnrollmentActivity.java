@@ -1,6 +1,5 @@
 package com.test.test.ui;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -9,22 +8,27 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.test.test.recorder.AudioRecorder;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.test.test.recorder.WavAudioRecorder;
 import com.test.test.rest.AudioPinApiHelper;
 import com.test.test.rest.models.AuthRequest;
 import com.test.test.rest.models.AuthResponse;
 import com.test.test.rest.models.EnrollInitResponse;
 import com.test.test.rest.models.Enrollment;
 import com.test.test.rest.models.EnrollmentInfo;
+import com.test.test.rest.models.Interval;
+import com.test.test.ui.interfaces.AuthCallback;
+import com.test.test.ui.interfaces.EnrollCallback;
+import com.test.test.ui.interfaces.EnrollInitCallback;
 
 import java.io.File;
-import java.util.TimeZone;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-
-
-
 
 public class AudioPinEnrollmentActivity extends AppCompatActivity {
     private Button mButton0;
@@ -40,20 +44,13 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
     private Button mButtonStar;
     private Button mButtonHash;
 
-
     private String mPinString;
     private TextView mPinView;
     private Switch mMFSwitch;
     private TextView mEditText;
-    private static String root = null;
-    String[] vocabulary = null;
-    private int mCounter = 0;
-
     String mGender;
 
     EnrollmentHelper enrollmentHelper;
-
-    private static final TimeZone UTC_TIME_ZONE = TimeZone.getTimeZone("UTC");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,10 +58,7 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
         setContentView(R.layout.activity_pin);
         inflateComponents();
         mPinString = "";
-        createDirectoriesIfNeeded();
-        vocabulary = getResources().getStringArray(R.array.vocabulary);
         mGender = "M";
-
     }
 
     private void inflateComponents(){
@@ -159,8 +153,7 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
             }
         });
 
-
-        mButtonStar = (Button)findViewById(R.id.button9);
+        mButtonStar = (Button)findViewById(R.id.buttonStar);
         mButtonStar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -170,7 +163,7 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
             }
         });
 
-        mButtonHash = (Button)findViewById(R.id.button9);
+        mButtonHash = (Button)findViewById(R.id.buttonHash);
         mButtonHash.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -187,68 +180,73 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
         mMFSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked) {
+                    mMFSwitch.setText("F");
                     mGender = "F";
                 }else{
                     mGender = "M";
+                    mMFSwitch.setText("M");
                 }
             }
         });
     }
 
-
+    private boolean isConsecutive(String pin){
+        if(pin.equalsIgnoreCase("1234")) return true;
+        if(pin.equalsIgnoreCase("2345")) return true;
+        if(pin.equalsIgnoreCase("3456")) return true;
+        return false;
+    }
 
     private void enroll(String key){
         if(key == null || key.isEmpty() || key.length() <= 3 ){
             return;
         }
-        mPinView.setText("");
-
+        if(isConsecutive(key)){
+            mPinView.setText("");
+            mPinString = "";
+            Toast.makeText(getBaseContext(),
+                    "Pin must not be a sequence.", Toast.LENGTH_SHORT).show();
+            return;
+        }
         enrollmentHelper = new EnrollmentHelper(getBaseContext());
         AuthRequest authRequest = new AuthRequest(AudioPinApiHelper.USER, AudioPinApiHelper.PASS);
         String name = UUID.randomUUID().toString();
-
-        final EnrollmentInfo enrollmentInfo = new EnrollmentInfo(mGender, name, "2815", "", false);
+        final EnrollmentInfo enrollmentInfo = new EnrollmentInfo(mGender, name, key, "", false);
         enrollmentHelper.fetchAuthToken(authRequest, new AuthCallback() {
             @Override
             public void onSuccess(AuthResponse response) {
-                Toast.makeText(getBaseContext(), response.jwt, Toast.LENGTH_SHORT).show();
-
+                Toast.makeText(getBaseContext(), "Received authentication token",
+                        Toast.LENGTH_SHORT).show();
                 final String token = "Bearer " + response.jwt;
-
-                enrollmentHelper.initializeEnrollmentInfo("Bearer " + response.jwt, enrollmentInfo, new EnrollInitCallback() {
+                enrollmentHelper.initializeEnrollmentInfo("Bearer " + response.jwt, enrollmentInfo,
+                        new EnrollInitCallback() {
                     @Override
                     public void onSuccess(EnrollInitResponse response) {
-                        Toast.makeText(getBaseContext(), "Enrollment initialized", Toast.LENGTH_SHORT).show();
-                        animate(response, token);
+                        Toast.makeText(getBaseContext(), "Enrollment initialized",
+                                Toast.LENGTH_SHORT).show();
+                        getIntervals(response.animation.enrollment, response.prompts);
+                        animate(response, token, response.id);
                     }
                     @Override
                     public void onError(String error) {
+                        mPinView.setText("");
+                        mPinString = "";
                     }
                 });
             }
             @Override
             public void onError(String error) {
+                mPinView.setText("");
+                mPinString = "";
             }
         });
     }
 
-    private void createDirectoriesIfNeeded() {
-        root = Environment.getExternalStorageDirectory().getAbsolutePath();
-        File folder = new File(root, "AudioRecord");
-        if (!folder.exists()) {
-            folder.mkdir();
-        }
-        File audioFolder = new File(folder.getAbsolutePath(), "Audio");
-        if (!audioFolder.exists()) {
-            audioFolder.mkdir();
-        }
-        root = audioFolder.getAbsolutePath();
-    }
-
-    private void animate(EnrollInitResponse response, final String token){
+    private void animate(final EnrollInitResponse response,
+                         final String token, final String clientId){
         final Enrollment [] enrollments = response.animation.enrollment;
         final Timer timer = new Timer();
-        final AudioRecorder audioRecorder = new AudioRecorder(getBaseContext());
+        final WavAudioRecorder audioRecorder = new WavAudioRecorder(getBaseContext());
         audioRecorder.startRecording();
         timer.scheduleAtFixedRate(new TimerTask() {
             long startTime = System.currentTimeMillis();
@@ -260,10 +258,33 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                     count++;
                     if(count >= enrollments.length){
                         timer.cancel();
+                        delay(1000);
                         audioRecorder.stopRecording();
-
-                        enrollmentHelper.uploadEnrollmentAudio(token);
-
+                        delay(1000);
+                        String intervalsStr =  getIntervals(response.animation.enrollment,
+                                response.prompts);
+                        enrollmentHelper.uploadEnrollmentAudio(token, clientId, intervalsStr,
+                                new File(audioRecorder.getFilename()), new EnrollCallback() {
+                                    @Override
+                                    public void onSuccess(final String response) {
+                                        Toast.makeText(getBaseContext(), response,
+                                                Toast.LENGTH_LONG).show();
+                                        mPinView.setText("");
+                                        mPinString = "";
+                                    }
+                                    @Override
+                                    public void onError(final String error) {
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                Toast.makeText(getBaseContext(), error,
+                                                        Toast.LENGTH_SHORT).show();
+                                                mPinView.setText("");
+                                                mPinString = "";
+                                            }
+                                        });
+                                    }
+                                });
                         return;
                     }
                     duration = Integer.parseInt(enrollments[count].duration);
@@ -274,155 +295,45 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                             mEditText.setText(enrollments[count].instruction);
                         }
                     });
-                } else {
                 }
             }
-        }, 0, 100);
+        }, 0, 10);
     }
 
-
-
-
-
-
-//    public void fetchAuthToken(){
-//        //AudioPinApiHelper.init(getBaseContext());
-//        AuthRequest authRequest = new AuthRequest("admin", "71xufPuaMT8z");
-//        OurAudioPinApi.getInstance()
-//                .authToken(authRequest)
-//                .enqueue(new Callback<Object>() {
-//                    @Override
-//                    public void onResponse(Call<Object> call, retrofit2.Response<Object> response) {
-//                        int statusCode = response.code();
-//                        Object timeCard = response.body();
-//                        //String token = response.body();
-//
-//                        String jsonString = response.body().toString();
-//                        Gson gson = new Gson();
-//
-//                        JwtResponse jwt = gson.fromJson(jsonString, JwtResponse.class);
-//
-//                        //sendEnrollmentInfo("Bearer " + jwt.jwt);
-//                        //uploadEnrollmentAudio("Bearer " + jwt.jwt);
-//                    }
-//                    @Override
-//                    public void onFailure(Call<Object> call, Throwable t) {
-//                       int ii = 0;
-//                    }
-//                });
-//    }
-
-//    public void sendEnrollmentInfo(String token){
-//        //AudioPinApiHelper.init(getBaseContext());
-//        AuthRequest authRequest = new AuthRequest("admin", "71xufPuaMT8z");
-//        EnrollmentInfo enrollmentInfo = new EnrollmentInfo("M", "abcd3", "2815", "", false);
-//        OurAudioPinApi.getInstance()
-//                .sendEnrollmentInfo(token, enrollmentInfo)
-//                .enqueue(new Callback<Object>() {
-//                    @Override
-//                    public void onResponse(Call<Object> call, retrofit2.Response<Object> response) {
-//                        int statusCode = response.code();
-//                        Object timeCard = response.body();
-//                    }
-//                    @Override
-//                    public void onFailure(Call<Object> call, Throwable t) {
-//                        int ii = 0;
-//                    }
-//                });
-//    }
-
-
-    /*
-
-    public void uploadEnrollmentAudio(String token){
-        //AudioPinApiHelper.init(getBaseContext());
-
-        String clientId = "b3df334c5588a375ae5327e4d05674d3";
-        //String clientId = "abcd";
-        Interval interval1 = new Interval("Chicago", 11370L, 13374L, 0);
-        Interval interval2 = new Interval("Boston", 13379L, 17387L, 0);
-
-        Interval intervals[] = new Interval[2];
-        intervals[0] = interval1;
-        intervals[1] = interval2;
-
-        EnrollmentAudioRequest request = new EnrollmentAudioRequest(intervals);
-
-        //String intervalsStr = "[{\"phrase\":\"Chicago\",\"end\":13350,\"start\":11350},{\"phrase\":\"Boston\",\"end\":15351,\"start\":13351},{\"phrase\":\"Dallas\",\"end\":17352,\"start\":15352}]";//intervals.toString();
-
-        String intervalsStr = "[{\"phrase\":\"Chicago\",\"end\":13350,\"start\":11350},{\"phrase\":\"Boston\",\"end\":15351,\"start\":13351},{\"phrase\":\"Dallas\",\"end\":17352,\"start\":15352},{\"phrase\":\"Atlanta\",\"end\":19353,\"start\":17353},{\"phrase\":\"Denver\",\"end\":21354,\"start\":19354},{\"phrase\":\"Seattle\",\"end\":23355,\"start\":21355},{\"phrase\":\"Nashville\",\"end\":25356,\"start\":23356},{\"phrase\":\"Baltimore\",\"end\":27357,\"start\":25357},{\"phrase\":\"Orlando\",\"end\":29358,\"start\":27358},{\"phrase\":\"Memphis\",\"end\":31359,\"start\":29359},{\"phrase\":\"Cleveland\",\"end\":33360,\"start\":31360},{\"phrase\":\"Phoenix\",\"end\":35361,\"start\":33361},{\"phrase\":\"Chicago\",\"end\":42162,\"start\":40162},{\"phrase\":\"Boston\",\"end\":44163,\"start\":42163},{\"phrase\":\"Dallas\",\"end\":46164,\"start\":44164},{\"phrase\":\"Atlanta\",\"end\":48165,\"start\":46165},{\"phrase\":\"Denver\",\"end\":50166,\"start\":48166},{\"phrase\":\"Seattle\",\"end\":52167,\"start\":50167},{\"phrase\":\"Nashville\",\"end\":54168,\"start\":52168},{\"phrase\":\"Baltimore\",\"end\":56169,\"start\":54169},{\"phrase\":\"Orlando\",\"end\":58170,\"start\":56170},{\"phrase\":\"Memphis\",\"end\":60171,\"start\":58171},{\"phrase\":\"Cleveland\",\"end\":62172,\"start\":60172},{\"phrase\":\"Phoenix\",\"end\":64173,\"start\":62173},{\"phrase\":\"Chicago\",\"end\":70974,\"start\":68974},{\"phrase\":\"Boston\",\"end\":72975,\"start\":70975},{\"phrase\":\"Dallas\",\"end\":74976,\"start\":72976},{\"phrase\":\"Atlanta\",\"end\":76977,\"start\":74977},{\"phrase\":\"Denver\",\"end\":78978,\"start\":76978},{\"phrase\":\"Seattle\",\"end\":80979,\"start\":78979},{\"phrase\":\"Nashville\",\"end\":82980,\"start\":80980},{\"phrase\":\"Baltimore\",\"end\":84981,\"start\":82981},{\"phrase\":\"Orlando\",\"end\":86982,\"start\":84982},{\"phrase\":\"Memphis\",\"end\":88983,\"start\":86983},{\"phrase\":\"Cleveland\",\"end\":90984,\"start\":88984},{\"phrase\":\"Phoenix\",\"end\":92985,\"start\":90985}]";
-
-        OurAudioPinApi.getInstance()
-                .uploadEnrollmentAudio(token, clientId, format(new Date(System.currentTimeMillis()), true),
-                        RequestBody.create(MediaType.parse("application/json"), intervalsStr),
-                        RequestBody.create(MediaType.parse("audio/wav"), getAudioFile()),
-                        "enrollment.wav"
-                        )
-                .enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
-                        int statusCode = response.code();
-                        Object timeCard = response.body();
-                    }
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        int ii = 0;
-                    }
-                });
-    }
-
-
-
-    private static File getAudioFile() {
-       File sdcard = Environment.getExternalStorageDirectory();
-       if (sdcard.exists()){
-            int ii = 0;
+    private void delay(long time){
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-
-
-        //File fff = new File(sdcard, "/enrollment.wav");
-        File fff = new File(sdcard, "enrollment.wav");
-
-
-        return fff;
-
     }
 
-
-    public static String format(Date date, boolean millis) {
-        Calendar calendar = new GregorianCalendar(UTC_TIME_ZONE, Locale.US);
-        calendar.setTime(date);
-
-        // estimate capacity of buffer as close as we can (yeah, that's pedantic ;)
-        int capacity = "yyyy-MM-dd hh:mm:ss".length();
-        capacity += millis ? ".sss".length() : 0;
-        StringBuilder formatted = new StringBuilder(capacity);
-
-        padInt(formatted, calendar.get(Calendar.YEAR), "yyyy".length());
-        formatted.append('-');
-        padInt(formatted, calendar.get(Calendar.MONTH) + 1, "MM".length());
-        formatted.append('-');
-        padInt(formatted, calendar.get(Calendar.DAY_OF_MONTH), "dd".length());
-        formatted.append(' ');
-        padInt(formatted, calendar.get(Calendar.HOUR_OF_DAY), "hh".length());
-        formatted.append(':');
-        padInt(formatted, calendar.get(Calendar.MINUTE), "mm".length());
-        formatted.append(':');
-        padInt(formatted, calendar.get(Calendar.SECOND), "ss".length());
-        if (millis) {
-            formatted.append('.');
-            padInt(formatted, calendar.get(Calendar.MILLISECOND), "sss".length());
+    private String getIntervals(Enrollment[] enrollments, String[] prompts){
+        List<String> promptsList = Arrays.asList(prompts);
+        Interval[] intervals = new Interval[36];
+        int intervalCount = 0;
+        long duration = 0;
+        for(Enrollment enrollment: enrollments){
+            String instruction = enrollment.instruction;
+            Long animDuration = Long.parseLong(enrollment.duration);
+            if(promptsList == null || promptsList.isEmpty()){
+                return null;
+            }
+            if(instruction == null || instruction.isEmpty()){
+                continue;
+            }
+            if(promptsList.contains(instruction)){
+                Interval interval = new Interval(enrollment.instruction,
+                        duration, duration + animDuration);
+                intervals[intervalCount] = interval;
+                intervalCount++;
+            }
+            duration += animDuration;
         }
-
-        return formatted.toString();
+        List<Interval> intervalList = Arrays.asList(intervals);
+        Gson gson = new Gson();
+        Type type = new TypeToken<List<Interval>>(){}.getType();
+        String intervalStr = gson.toJson(intervalList, type);
+        return intervalStr;
     }
-
-    private static void padInt(StringBuilder buffer, int value, int length) {
-        String strValue = Integer.toString(value);
-        for (int i = length - strValue.length(); i > 0; i--) {
-            buffer.append('0');
-        }
-        buffer.append(strValue);
-    }
-*/
 }
