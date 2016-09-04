@@ -1,4 +1,6 @@
 package com.test.test.ui;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -48,7 +50,10 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
     private TextView mPinView;
     private Switch mMFSwitch;
     private TextView mEditText;
-    String mGender;
+    private String mGender;
+    private String mToken;
+    private String mClientId;
+
 
     EnrollmentHelper enrollmentHelper;
 
@@ -188,6 +193,18 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 }
             }
         });
+        Button finish = (Button) findViewById(R.id.buttonFinish);
+        finish.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getBaseContext(), AudioPinVerificationActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("token", mToken);
+                bundle.putString("clientId", mClientId);
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
+        });
     }
 
     private boolean isConsecutive(String pin){
@@ -218,6 +235,7 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 Toast.makeText(getBaseContext(), "Received authentication token",
                         Toast.LENGTH_SHORT).show();
                 final String token = "Bearer " + response.jwt;
+                mToken = token;
                 enrollmentHelper.initializeEnrollmentInfo("Bearer " + response.jwt, enrollmentInfo,
                         new EnrollInitCallback() {
                     @Override
@@ -225,6 +243,7 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                         Toast.makeText(getBaseContext(), "Enrollment initialized",
                                 Toast.LENGTH_SHORT).show();
                         getIntervals(response.animation.enrollment, response.prompts);
+                        mClientId = response.id;
                         animate(response, token, response.id);
                     }
                     @Override

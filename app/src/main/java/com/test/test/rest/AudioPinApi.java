@@ -11,6 +11,9 @@ import com.test.test.rest.models.AuthRequest;
 import com.test.test.rest.models.AuthResponse;
 import com.test.test.rest.models.EnrollInitResponse;
 import com.test.test.rest.models.EnrollmentInfo;
+import com.test.test.rest.models.verification.ClientInfoResponse;
+import com.test.test.rest.models.verification.StartVerificationRequest;
+import com.test.test.rest.models.verification.StartVerificationResponse;
 
 import java.io.IOException;
 import java.util.Date;
@@ -104,7 +107,19 @@ public class AudioPinApi {
     public Call<ResponseBody> uploadEnrollmentAudio2(String token, String clientId,
                                                     String animationStart, RequestBody intervals,
                                                     RequestBody body, String filename){
-        return mApiService.uploadEnrollmentAudio2(token, clientId, animationStart, intervals, body, filename);
+        return mApiService.uploadEnrollmentAudio2(token, clientId, animationStart, intervals,
+                body, filename);
+    }
+
+
+    //Verification
+    public Call<ClientInfoResponse> getClientInfo(String authorization, String clientId){
+        return mApiService.getClientInfo(authorization, clientId);
+    }
+
+    public Call<StartVerificationResponse> startVerification(String authorization,
+                                                             StartVerificationRequest request){
+        return mApiService.startVerification (authorization, request);
     }
 
     private static class AudioPinApiHolder {

@@ -4,11 +4,15 @@ import com.test.test.rest.models.AuthRequest;
 import com.test.test.rest.models.AuthResponse;
 import com.test.test.rest.models.EnrollInitResponse;
 import com.test.test.rest.models.EnrollmentInfo;
+import com.test.test.rest.models.verification.ClientInfoResponse;
+import com.test.test.rest.models.verification.StartVerificationRequest;
+import com.test.test.rest.models.verification.StartVerificationResponse;
 
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -21,6 +25,8 @@ import retrofit2.http.Path;
  */
 
 public interface AudioPinApiInterface {
+
+    //Enrollment
     @POST("/api/v1/auth")
     Call<Object> authToken(@Body AuthRequest authRequest);
 
@@ -38,5 +44,16 @@ public interface AudioPinApiInterface {
                                              @Part("intervals") RequestBody intervals,
                                              @Part("enrollment.wav\"; filename=\"blob") RequestBody body,
                                              @Part("file") String file);
+
+    //Verification
+    @GET("/api/v1/clients/{client_id}")
+    Call<ClientInfoResponse> getClientInfo(@Header("Authorization") String authorization,
+                                           @Path("client_id") String clientId );
+
+    @POST("/api/v1/verifications")
+    Call<StartVerificationResponse> startVerification(@Header("Authorization") String authorization,
+                                                      @Body StartVerificationRequest clientId );
+
+
 
 }

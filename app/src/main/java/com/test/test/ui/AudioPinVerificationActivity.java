@@ -6,6 +6,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.test.test.rest.models.verification.ClientInfoResponse;
+import com.test.test.rest.models.verification.StartVerificationRequest;
+import com.test.test.rest.models.verification.StartVerificationResponse;
+import com.test.test.ui.interfaces.ClientInfoCallback;
+import com.test.test.ui.interfaces.StartVerificationCallback;
 
 /**
  * Created by shahed on 03/09/2016.
@@ -15,12 +22,18 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
     private String mPinString;
     private TextView mDisplay;
 
+    private String mClientId;
+    private String mToken;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verification);
         inflateComponents();
         mPinString = "";
+
+
+        verify();
     }
 
     private void inflateComponents(){
@@ -138,6 +151,64 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
 
         mDisplay = (TextView) findViewById(R.id.verification_display);
 
+
+        Button finish = (Button) findViewById(R.id.verification_button_finish);
+        finish.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                Bundle bundle = getIntent().getExtras();
+//                String mToken = bundle.getString("token");
+//                String mClientId = bundle.getString("clientId");
+//                new VerificationHelper(getBaseContext()).fetchClientInfo(mToken, mClientId, null );
+            }
+        });
+    }
+
+    private void verify(){
+        Bundle bundle = getIntent().getExtras();
+        final String mToken = bundle.getString("token");
+        final String mClientId = bundle.getString("clientId");
+
+        final VerificationHelper helper = new VerificationHelper(getBaseContext());
+
+        helper.fetchClientInfo(mToken, mClientId, new ClientInfoCallback() {
+            @Override
+            public void onSuccess(ClientInfoResponse response) {
+                String status = response.status;
+                String verification_id = response.id;
+                String verification_name = response.name;
+
+
+                Toast.makeText(getBaseContext(), status, Toast.LENGTH_LONG).show();
+
+
+                StartVerificationRequest req = new StartVerificationRequest("audiopin", false, 75,
+                        "webapp", "c6ad29bf-9d30-4c5f-b256-8ca7327a3c23", "1234567890", false);
+
+                helper.startVerification(mToken, req, new StartVerificationCallback() {
+                    @Override
+                    public void onSuccess(StartVerificationResponse response) {
+                        StartVerificationResponse rs = response;
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        int ii = 19;
+
+                    }
+                });
+
+
+
+
+
+            }
+
+            @Override
+            public void onError(String error) {
+
+            }
+        });
     }
 
     private void verify(String input){
