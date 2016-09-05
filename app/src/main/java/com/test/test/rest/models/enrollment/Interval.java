@@ -1,4 +1,4 @@
-package com.test.test.rest.models;
+package com.test.test.rest.models.enrollment;
 
 /**
  * Created by sparvez on 2016-08-31.

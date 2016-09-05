@@ -1,4 +1,4 @@
-package com.test.test.ui;
+package com.test.test.enrollment;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,6 +21,9 @@ import com.test.test.rest.models.EnrollInitResponse;
 import com.test.test.rest.models.Enrollment;
 import com.test.test.rest.models.EnrollmentInfo;
 import com.test.test.rest.models.Interval;
+import com.test.test.ui.AudioPinVerificationActivity;
+import com.test.test.ui.EnrollmentHelper;
+import com.test.test.ui.R;
 import com.test.test.ui.interfaces.AuthCallback;
 import com.test.test.ui.interfaces.EnrollCallback;
 import com.test.test.ui.interfaces.EnrollInitCallback;

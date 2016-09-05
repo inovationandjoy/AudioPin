@@ -1,4 +1,4 @@
-package com.test.test.ui.interfaces;
+package com.test.test.verification;
 
 import com.test.test.rest.models.verification.ClientInfoResponse;
 

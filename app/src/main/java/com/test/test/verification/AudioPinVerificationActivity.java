@@ -1,4 +1,4 @@
-package com.test.test.ui;
+package com.test.test.verification;
 
 import android.os.Bundle;
 import android.os.Environment;
@@ -14,7 +14,8 @@ import com.test.test.rest.models.AuthResponse;
 import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.rest.models.verification.StartVerificationRequest;
 import com.test.test.rest.models.verification.StartVerificationResponse;
-import com.test.test.ui.interfaces.AuthCallback;
+import com.test.test.enrollment.AuthCallback;
+import com.test.test.ui.R;
 import com.test.test.ui.interfaces.ClientInfoCallback;
 import com.test.test.ui.interfaces.StartVerificationCallback;
 

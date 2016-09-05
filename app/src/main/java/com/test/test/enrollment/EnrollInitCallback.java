@@ -1,4 +1,4 @@
-package com.test.test.ui.interfaces;
+package com.test.test.enrollment;
 
 import com.test.test.rest.models.AuthResponse;
 import com.test.test.rest.models.EnrollInitResponse;

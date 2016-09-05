@@ -1,4 +1,4 @@
-package com.test.test.ui;
+package com.test.test.enrollment;
 
 import android.content.Context;
 
