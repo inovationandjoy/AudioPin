@@ -126,4 +126,12 @@ public class AudioPinApi {
         public static final AudioPinApi instance = new AudioPinApi();
     }
 
+
+    public Call<ResponseBody> uploadVerificationAudio(String token, String verificationId,
+                                                      String start,
+                                                     RequestBody word_boundaries,
+                                                     RequestBody body, String filename){
+        return mApiService.uploadVerificationAudio(token, verificationId,  word_boundaries, body, filename);
+    }
+
 }

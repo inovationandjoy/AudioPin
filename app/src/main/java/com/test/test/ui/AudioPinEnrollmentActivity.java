@@ -2,6 +2,7 @@ package com.test.test.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -64,7 +65,27 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
         inflateComponents();
         mPinString = "";
         mGender = "M";
+
+
+
+
+        File ffff = new File(getExternalDir(), "YYY");
+        if(!ffff.exists()){
+            ffff.mkdirs();
+        }
+
     }
+
+
+
+    private String getExternalDir() {
+        File externalDir = new File(Environment.getExternalStorageDirectory().toString());
+        if (!externalDir.canWrite())
+            externalDir = new File(getBaseContext().getFilesDir().getAbsolutePath());
+        return externalDir.getAbsolutePath();
+    }
+
+
 
     private void inflateComponents(){
         mButton0 = (Button)findViewById(R.id.button0);
@@ -265,7 +286,11 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                          final String token, final String clientId){
         final Enrollment [] enrollments = response.animation.enrollment;
         final Timer timer = new Timer();
-        final WavAudioRecorder audioRecorder = new WavAudioRecorder(getBaseContext());
+
+
+        final WavAudioRecorder audioRecorder = new WavAudioRecorder(getBaseContext(), "enrollment");
+
+
         audioRecorder.startRecording();
         timer.scheduleAtFixedRate(new TimerTask() {
             long startTime = System.currentTimeMillis();

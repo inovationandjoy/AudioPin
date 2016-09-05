@@ -12,14 +12,14 @@
         android:layout_width="match_parent"
         android:gravity="center"
         android:textSize="20dp"
-        android:layout_height="100dp"
+        android:layout_height="80dp"
         android:inputType="textPersonName"
         android:id="@+id/editText"
         android:background="@android:color/background_light"
         android:layout_marginBottom="10dp" />
 
     <LinearLayout
-        android:layout_marginBottom="30dp"
+        android:layout_marginBottom="10dp"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -31,12 +31,7 @@
             android:layout_marginLeft="20dp"
             android:layout_gravity="left"
             android:id="@+id/switchMaleFemale" />
-        <!--<Spinner-->
-            <!--android:id="@+id/male_female_spinner"-->
-            <!--android:layout_width="50dp"-->
-            <!--android:layout_height="50dp"-->
-            <!--android:layout_marginLeft="20dp"-->
-            <!--android:layout_gravity="center"/>-->
+
         <View
             android:layout_width="20dp"
             android:layout_height="50dp"
@@ -67,12 +62,10 @@
             android:layout_height="80dp"
             android:id="@+id/button1"
             android:layout_weight="1"
-
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip"
-            />
+            android:layout_marginBottom="-5dip" />
 
         <Button
             android:text="2"
@@ -233,7 +226,8 @@
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
             android:layout_marginBottom="-5dip"
-            android:id="@+id/buttonFinish" />
+            android:id="@+id/buttonFinish"
+            android:background="#FFFFFF"/>
 
     </LinearLayout>
 </LinearLayout>

@@ -35,7 +35,7 @@
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
             android:layout_marginBottom="-5dip"
-            />
+            android:textAllCaps="false" />
 
         <Button
             android:id="@+id/verification.button2"
@@ -46,7 +46,8 @@
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip"/>
+            android:layout_marginBottom="-5dip"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/verification.button3"
@@ -57,7 +58,8 @@
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip"/>
+            android:layout_marginBottom="-5dip"
+            android:textAllCaps="false"/>
     </LinearLayout>
 
     <LinearLayout
@@ -75,7 +77,8 @@
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip" />
+            android:layout_marginBottom="-5dip"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/verification.button5"
@@ -86,7 +89,8 @@
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip" />
+            android:layout_marginBottom="-5dip"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/verification.button6"
@@ -97,7 +101,8 @@
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip" />
+            android:layout_marginBottom="-5dip"
+            android:textAllCaps="false"/>
     </LinearLayout>
 
     <LinearLayout
@@ -115,7 +120,8 @@
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip" />
+            android:layout_marginBottom="-5dip"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/verification.button8"
@@ -126,7 +132,8 @@
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip" />
+            android:layout_marginBottom="-5dip"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/verification.button9"
@@ -137,7 +144,8 @@
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip" />
+            android:layout_marginBottom="-5dip"
+            android:textAllCaps="false"/>
     </LinearLayout>
 
 
@@ -156,7 +164,8 @@
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
             android:layout_marginBottom="-5dip"
-            android:id="@+id/verification.button.star" />
+            android:id="@+id/verification.button.star"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/verification.button0"
@@ -167,7 +176,8 @@
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip" />
+            android:layout_marginBottom="-5dip"
+            android:textAllCaps="false"/>
 
         <Button
             android:id="@+id/verification.button.hash"
@@ -178,7 +188,8 @@
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip" />
+            android:layout_marginBottom="-5dip"
+            android:textAllCaps="false"/>
     </LinearLayout>
 
     <LinearLayout
@@ -196,7 +207,8 @@
             android:layout_marginLeft="-3dip"
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
-            android:layout_marginBottom="-5dip" />
+            android:layout_marginBottom="-5dip"
+            android:textAllCaps="false"/>
 
     </LinearLayout>
 </LinearLayout>

@@ -3,22 +3,22 @@ package com.test.test.recorder;
 /**
  * Created by sparvez on 2016-09-02.
  */
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 public class WavAudioRecorder {
     private static final int RECORDER_BPP = 16;
     private static final String AUDIO_RECORDER_FILE_EXT_WAV = ".wav";
-    private static final String AUDIO_RECORDER_FOLDER = "WavAudioRecorder";
+    private static final String AUDIO_RECORDER_FOLDER = "WavAudioRecorderZZZ";
     private static final String AUDIO_RECORDER_TEMP_FILE = "record_temp.raw";
     private static final int RECORDER_SAMPLERATE = 11000;
     private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_STEREO;
@@ -29,22 +29,35 @@ public class WavAudioRecorder {
     private Thread recordingThread = null;
     private boolean isRecording = false;
     private Context mContext;
+    private String mRecFileName;
 
-    public WavAudioRecorder(Context context) {
+    public WavAudioRecorder(Context context, String recFileName) {
         bufferSize = AudioRecord.getMinBufferSize(8000,
                 AudioFormat.CHANNEL_CONFIGURATION_MONO,
                 AudioFormat.ENCODING_PCM_16BIT);
         this.mContext = context;
+        this.mRecFileName = recFileName;
     }
 
     public String getFilename(){
-        String filepath = mContext.getCacheDir().getPath();
+        //String filepath = mContext.getCacheDir().getPath();
+        String filepath = getExternalDir();
         File file = new File(filepath,AUDIO_RECORDER_FOLDER);
         if(!file.exists()){
             file.mkdirs();
         }
-        return (file.getAbsolutePath() + "/" + "enrollment" + AUDIO_RECORDER_FILE_EXT_WAV);
+        //return (file.getAbsolutePath() + "/" + "enrollment" + AUDIO_RECORDER_FILE_EXT_WAV);
+        return (file.getAbsolutePath() + "/" + mRecFileName + AUDIO_RECORDER_FILE_EXT_WAV);
     }
+
+    private String getExternalDir() {
+        File externalDir = new File(Environment.getExternalStorageDirectory().toString());
+        if (!externalDir.canWrite())
+            externalDir = new File(mContext.getFilesDir().getAbsolutePath());
+        return externalDir.getAbsolutePath();
+    }
+
+
 
     private String getTempFilename(){
         String filepath = Environment.getExternalStorageDirectory().getPath();

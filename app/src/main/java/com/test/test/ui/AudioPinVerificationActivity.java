@@ -1,6 +1,7 @@
 package com.test.test.ui;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -8,11 +9,19 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.test.test.recorder.WavAudioRecorder;
+import com.test.test.rest.models.AuthResponse;
 import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.rest.models.verification.StartVerificationRequest;
 import com.test.test.rest.models.verification.StartVerificationResponse;
+import com.test.test.ui.interfaces.AuthCallback;
 import com.test.test.ui.interfaces.ClientInfoCallback;
 import com.test.test.ui.interfaces.StartVerificationCallback;
+
+import java.io.File;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by shahed on 03/09/2016.
@@ -25,6 +34,21 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
     private String mClientId;
     private String mToken;
 
+    private Button mButton0;
+    private Button mButton1;
+    private Button mButton2;
+    private Button mButton3;
+    private Button mButton4;
+    private Button mButton5;
+    private Button mButton6;
+    private Button mButton7;
+    private Button mButton8;
+    private Button mButton9;
+    private Button mButtonStar;
+    private Button mButtonHash;
+
+    private VerificationHelper verificationHelper;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,21 +58,10 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
 
 
         verify();
+        //checkVerification();
     }
 
     private void inflateComponents(){
-        Button mButton0;
-        Button mButton1;
-        Button mButton2;
-        Button mButton3;
-        Button mButton4;
-        Button mButton5;
-        Button mButton6;
-        Button mButton7;
-        Button mButton8;
-        Button mButton9;
-        Button mButtonStar;
-        Button mButtonHash;
 
         mButton0 = (Button)findViewById(R.id.verification_button0);
         mButton0.setOnClickListener(new View.OnClickListener() {
@@ -166,42 +179,36 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
 
     private void verify(){
         Bundle bundle = getIntent().getExtras();
-        final String mToken = bundle.getString("token");
+        mToken = bundle.getString("token");
         final String mClientId = bundle.getString("clientId");
 
-        final VerificationHelper helper = new VerificationHelper(getBaseContext());
+        verificationHelper = new VerificationHelper(getBaseContext());
 
-        helper.fetchClientInfo(mToken, mClientId, new ClientInfoCallback() {
+        verificationHelper.fetchClientInfo(mToken, mClientId, new ClientInfoCallback() {
             @Override
             public void onSuccess(ClientInfoResponse response) {
                 String status = response.status;
                 String verification_id = response.id;
                 String verification_name = response.name;
 
-
                 Toast.makeText(getBaseContext(), status, Toast.LENGTH_LONG).show();
 
-
                 StartVerificationRequest req = new StartVerificationRequest("audiopin", false, 75,
-                        "webapp", "c6ad29bf-9d30-4c5f-b256-8ca7327a3c23", "1234567890", false);
+                        "webapp", "b3df334c5588a375ae5327e4d076acb2", "1234567890", false);
 
-                helper.startVerification(mToken, req, new StartVerificationCallback() {
+                verificationHelper.startVerification(mToken, req, new StartVerificationCallback() {
                     @Override
                     public void onSuccess(StartVerificationResponse response) {
-                        StartVerificationResponse rs = response;
+                        Toast.makeText(getBaseContext(), "Verification started",
+                                Toast.LENGTH_SHORT).show();
+                         animate(response);
                     }
-
                     @Override
                     public void onError(String error) {
-                        int ii = 19;
-
+                        Toast.makeText(getBaseContext(), "Error to start verification ",
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
-
-
-
-
-
             }
 
             @Override
@@ -210,6 +217,144 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             }
         });
     }
+
+
+
+
+
+    private void checkVerification(){
+        verificationHelper = new VerificationHelper(getBaseContext());
+
+
+        verificationHelper.getAT(new AuthCallback() {
+            @Override
+            public void onSuccess(AuthResponse response) {
+                String verificationId = "b3df334c5588a375ae5327e4d0956330";
+
+                String token = "Bearer " + response.jwt;
+
+                verificationHelper.uploadVerificationAudio(token, verificationId, "",
+                        new File(Environment.getExternalStorageDirectory(), "verification.wav"));
+
+            }
+
+            @Override
+            public void onError(String error) {
+
+            }
+        });
+
+
+
+
+    }
+
+
+    private void animate(final StartVerificationResponse response){
+
+        final String verificationId = response.resource;
+        //final String verificationId = response.id;
+
+
+        final Timer timer = new Timer();
+        final WavAudioRecorder audioRecorder = new WavAudioRecorder(getBaseContext(), "verification");
+        audioRecorder.startRecording();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            long startTime = System.currentTimeMillis();
+            int count = 0;
+            int duration = response.animation[count].duration;
+            @Override
+            public void run() {
+                if (System.currentTimeMillis() - startTime > duration) {
+                    count++;
+                    if(count >= response.animation.length){
+                        timer.cancel();
+                        delay(1000);
+
+                        audioRecorder.stopRecording();
+                        delay(1000);
+
+
+
+//                        verificationHelper.uploadVerificationAudio(mToken, verificationId, "[0, 500]",
+//                                new File(Environment.getExternalStorageDirectory(), "verification.wav"));
+
+
+                        verificationHelper.uploadVerificationAudio(mToken, verificationId, "[0, 500]",
+                                new File(audioRecorder.getFilename()));
+
+
+
+
+//                        String intervalsStr =  getIntervals(response.animation.enrollment,
+//                                response.prompts);
+//                        enrollmentHelper.uploadEnrollmentAudio(token, clientId, intervalsStr,
+//                                new File(audioRecorder.getFilename()), new EnrollCallback() {
+//                                    @Override
+//                                    public void onSuccess(final String response) {
+//                                        Toast.makeText(getBaseContext(), response,
+//                                                Toast.LENGTH_LONG).show();
+//                                        mPinView.setText("");
+//                                        mPinString = "";
+//                                    }
+//                                    @Override
+//                                    public void onError(final String error) {
+//                                        runOnUiThread(new Runnable() {
+//                                            @Override
+//                                            public void run() {
+//                                                Toast.makeText(getBaseContext(), error,
+//                                                        Toast.LENGTH_SHORT).show();
+//                                                mPinView.setText("");
+//                                                mPinString = "";
+//                                            }
+//                                        });
+//                                    }
+//                                });
+                        return;
+                    }
+                    duration = response.animation[count].duration;
+                    final Object pin_mapping = response.animation[count].pin_mapping;
+                    startTime = System.currentTimeMillis();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            showPinMapping(pin_mapping);
+
+                        }
+                    });
+                }
+            }
+        }, 0, 10);
+    }
+
+
+    private void delay(long time){
+        try {
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void showPinMapping(Object pinMap){
+        Map<Integer, String> map = (Map)pinMap;
+
+
+        mButton0.setText("0" + "\n" + map.get("0"));
+        mButton1.setText("1" + "\n" + map.get("1"));
+        mButton2.setText("2" + "\n" + map.get("2"));
+        mButton3.setText("3" + "\n" + map.get("3"));
+        mButton4.setText("4" + "\n" + map.get("4"));
+        mButton5.setText("5" + "\n" + map.get("5"));
+        mButton6.setText("6" + "\n" + map.get("6"));
+        mButton7.setText("7" + "\n" + map.get("7"));
+        mButton8.setText("8" + "\n" + map.get("8"));
+        mButton9.setText("9" + "\n" + map.get("9"));
+        mButtonStar.setText("*" + "\n" + map.get("*"));
+        mButtonHash.setText("#" + "\n" + map.get("#"));
+
+    }
+
 
     private void verify(String input){
         String pin = input;

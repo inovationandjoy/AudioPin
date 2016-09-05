@@ -3,12 +3,23 @@ package com.test.test.ui;
 import android.content.Context;
 
 import com.test.test.rest.AudioPinApi;
+import com.test.test.rest.AudioPinApiHelper;
+import com.test.test.rest.models.AuthRequest;
+import com.test.test.rest.models.AuthResponse;
 import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.rest.models.verification.StartVerificationRequest;
 import com.test.test.rest.models.verification.StartVerificationResponse;
+import com.test.test.ui.interfaces.AuthCallback;
 import com.test.test.ui.interfaces.ClientInfoCallback;
 import com.test.test.ui.interfaces.StartVerificationCallback;
+import com.test.test.ui.utils.StringFormatter;
 
+import java.io.File;
+import java.util.Date;
+
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 
@@ -71,7 +82,7 @@ public class VerificationHelper {
 
 
     public void startVerification(String token, StartVerificationRequest requestBody,
-                                  final StartVerificationCallback callback){
+                                  final StartVerificationCallback callback) {
         AudioPinApi.getInstance()
                 .startVerification(token, requestBody)
                 .enqueue(new Callback<StartVerificationResponse>() {
@@ -80,8 +91,7 @@ public class VerificationHelper {
                                            retrofit2.Response<StartVerificationResponse> response) {
                         int statusCode = response.code();
 
-
-                        switch(statusCode){
+                        switch (statusCode) {
                             case START_VERIFICATION_OK:
                                 callback.onSuccess(response.body());
                                 break;
@@ -99,6 +109,7 @@ public class VerificationHelper {
                                 break;
                         }
                     }
+
                     @Override
                     public void onFailure(Call<StartVerificationResponse> call, Throwable t) {
                         callback.onError("Client info retrieval exception.");
@@ -107,8 +118,55 @@ public class VerificationHelper {
     }
 
 
+    public void uploadVerificationAudio(String token, String verificationId, String boundaryStr,
+                                      final File theFile){
+        AudioPinApi.getInstance()
+                .uploadVerificationAudio(token, verificationId,
+                        StringFormatter.format(new Date(System.currentTimeMillis()), true),
+                        RequestBody.create(MediaType.parse("application/json"), boundaryStr),
+                        RequestBody.create(MediaType.parse("audio/wav"), theFile),
+                        "verification.wav"
+                )
+                .enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call,
+                                           retrofit2.Response<ResponseBody> response) {
+
+                        int statusCode = response.code();
+                        int abc = 0;
+                    }
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                    }
+                });
+
+    }
 
 
+    public void getAT(final AuthCallback cb){
+
+        AuthRequest ar = new AuthRequest(AudioPinApiHelper.USER, AudioPinApiHelper.PASS);
+        AudioPinApi.getInstance()
+                .getAuthToken(ar)
+                .enqueue(new Callback<AuthResponse>() {
+                    @Override
+                    public void onResponse(Call<AuthResponse> call,
+                                           retrofit2.Response<AuthResponse> response) {
+
+                        int statusCode = response.code();
+                        int abc = 0;
+
+                        cb.onSuccess(response.body());
+
+                    }
+                    @Override
+                    public void onFailure(Call<AuthResponse> call, Throwable t) {
+
+                    }
+                });
+
+    }
 
 
 
