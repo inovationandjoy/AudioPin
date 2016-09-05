@@ -12,7 +12,7 @@ public class StartVerificationRequest {
     public final String telephone_locator;
     public final Boolean use_telephone;
 
-    public StartVerificationRequest(String mode, Boolean word_doubling, int animation_speed,
+    public StartVerificationRequest(String mode, Boolean word_doubling, Integer animation_speed,
             String user_agent, String name, String telephone_locator, Boolean use_telephone){
 
         this.mode = mode;

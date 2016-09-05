@@ -7,10 +7,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.internal.bind.DateTypeAdapter;
 import com.moczul.ok2curl.CurlInterceptor;
 import com.moczul.ok2curl.logger.Loggable;
-import com.test.test.rest.models.AuthRequest;
-import com.test.test.rest.models.AuthResponse;
-import com.test.test.rest.models.EnrollInitResponse;
-import com.test.test.rest.models.EnrollmentInfo;
+import com.test.test.rest.models.enrollment.AuthRequest;
+import com.test.test.rest.models.enrollment.AuthResponse;
+import com.test.test.rest.models.enrollment.EnrollInitResponse;
+import com.test.test.rest.models.enrollment.EnrollmentInfo;
 import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.rest.models.verification.StartVerificationRequest;
 import com.test.test.rest.models.verification.StartVerificationResponse;
@@ -59,9 +59,23 @@ public class AudioPinApi {
                     public Response intercept(Chain chain) throws IOException {
                         Request original = chain.request();
 
+
+                        if(original.method().contains("PUT")){
+                            Request.Builder rb = original.newBuilder()
+                                    .header("User-Agent", "android " + "0.15")
+                                    .header("Content-Type", "Multipart/Form")
+                                    //.header("Accept", "application/json")
+                                    .method(original.method(), original.body());
+                            Response res = chain.proceed(rb.build());
+
+                            return res;//chain.proceed(rb.build());
+                        }
+
+
+
                         Request.Builder rb = original.newBuilder()
                                 .header("User-Agent", "android " + "0.15")
-                                .header("Content-Type", "application/json")
+                               // .header("Content-Type", "application/json")
                                 .header("Accept", "application/json")
                                 .method(original.method(), original.body());
                         Response res = chain.proceed(rb.build());
@@ -127,11 +141,17 @@ public class AudioPinApi {
     }
 
 
-    public Call<ResponseBody> uploadVerificationAudio(String token, String verificationId,
-                                                      String start,
+    public Call<Void> uploadVerificationAudio(String token, String verificationId,
+                                                     String start,
                                                      RequestBody word_boundaries,
-                                                     RequestBody body, String filename){
-        return mApiService.uploadVerificationAudio(token, verificationId,  word_boundaries, body, filename);
+                                                     RequestBody body,
+                                                     String filename){
+        return mApiService.uploadVerificationAudio(token, verificationId, start, word_boundaries, body, filename);
+    }
+
+
+    public Call<ResponseBody> getVerificationInfo(String token, String verificationId){
+        return mApiService.getVerificationInfo(token, verificationId);
     }
 
 }

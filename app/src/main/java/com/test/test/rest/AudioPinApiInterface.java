@@ -1,9 +1,9 @@
 package com.test.test.rest;
 
-import com.test.test.rest.models.AuthRequest;
-import com.test.test.rest.models.AuthResponse;
-import com.test.test.rest.models.EnrollInitResponse;
-import com.test.test.rest.models.EnrollmentInfo;
+import com.test.test.rest.models.enrollment.AuthRequest;
+import com.test.test.rest.models.enrollment.AuthResponse;
+import com.test.test.rest.models.enrollment.EnrollInitResponse;
+import com.test.test.rest.models.enrollment.EnrollmentInfo;
 import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.rest.models.verification.StartVerificationRequest;
 import com.test.test.rest.models.verification.StartVerificationResponse;
@@ -45,8 +45,6 @@ public interface AudioPinApiInterface {
                                              @Part("enrollment.wav\"; filename=\"blob") RequestBody body,
                                              @Part("file") String file);
 
-
-
     //Verification
     @GET("/api/v1/clients/{client_id}")
     Call<ClientInfoResponse> getClientInfo(@Header("Authorization") String authorization,
@@ -56,13 +54,22 @@ public interface AudioPinApiInterface {
     Call<StartVerificationResponse> startVerification(@Header("Authorization") String authorization,
                                                       @Body StartVerificationRequest clientId );
 
+
     @Multipart
-    @PUT("/api/v1/verifications/{verification_id}")
-    Call<ResponseBody> uploadVerificationAudio(@Header("Authorization") String authorization,
-                                               @Path("verification_id") String verification_id,
-                                               @Part("word_boundaries") RequestBody boundaries,
+    @PUT("/api/v1/verifications/{id}")
+    Call<Void> uploadVerificationAudio(@Header("Authorization") String authorization,
+                                               @Path("id") String id,
+                                               @Part("animation_start")String animation_start,
+                                               @Part("word_boundaries") RequestBody word_boundaries,
                                                @Part("verification.wav\"; filename=\"blob") RequestBody body,
                                                @Part("file") String file);
+
+
+
+
+    @GET(" /api/v1/verifications/{verification_id}")
+            Call<ResponseBody> getVerificationInfo(@Header("Authorization") String authorization,
+                                                   @Path("verification_id") String clientId );
 
 
 

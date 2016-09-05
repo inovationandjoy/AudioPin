@@ -3,14 +3,11 @@ package com.test.test.enrollment;
 import android.content.Context;
 
 import com.test.test.rest.AudioPinApi;
-import com.test.test.rest.models.AuthRequest;
-import com.test.test.rest.models.AuthResponse;
-import com.test.test.rest.models.EnrollInitResponse;
-import com.test.test.rest.models.EnrollmentInfo;
-import com.test.test.ui.interfaces.AuthCallback;
-import com.test.test.ui.interfaces.EnrollCallback;
-import com.test.test.ui.interfaces.EnrollInitCallback;
-import com.test.test.ui.utils.StringFormatter;
+import com.test.test.rest.models.enrollment.AuthRequest;
+import com.test.test.rest.models.enrollment.AuthResponse;
+import com.test.test.rest.models.enrollment.EnrollInitResponse;
+import com.test.test.rest.models.enrollment.EnrollmentInfo;
+import com.test.test.utils.StringFormatter;
 
 import java.io.File;
 import java.util.Date;

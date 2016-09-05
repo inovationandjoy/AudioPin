@@ -2,17 +2,15 @@ package com.test.test.verification;
 
 import android.content.Context;
 
+import com.test.test.enrollment.AuthCallback;
 import com.test.test.rest.AudioPinApi;
 import com.test.test.rest.AudioPinApiHelper;
-import com.test.test.rest.models.AuthRequest;
-import com.test.test.rest.models.AuthResponse;
+import com.test.test.rest.models.enrollment.AuthRequest;
+import com.test.test.rest.models.enrollment.AuthResponse;
 import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.rest.models.verification.StartVerificationRequest;
 import com.test.test.rest.models.verification.StartVerificationResponse;
-import com.test.test.enrollment.AuthCallback;
-import com.test.test.ui.interfaces.ClientInfoCallback;
-import com.test.test.ui.interfaces.StartVerificationCallback;
-import com.test.test.ui.utils.StringFormatter;
+import com.test.test.utils.StringFormatter;
 
 import java.io.File;
 import java.util.Date;
@@ -127,6 +125,24 @@ public class VerificationHelper {
                         RequestBody.create(MediaType.parse("audio/wav"), theFile),
                         "verification.wav"
                 )
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call,
+                                           retrofit2.Response<Void> response) {
+
+                        int statusCode = response.code();
+                        int abc = 0;
+                    }
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+
+                    }
+                });
+    }
+
+    public void getVerificationInfo(String token, String verificationId){
+        AudioPinApi.getInstance()
+                .getVerificationInfo(token, verificationId)
                 .enqueue(new Callback<ResponseBody>() {
                     @Override
                     public void onResponse(Call<ResponseBody> call,

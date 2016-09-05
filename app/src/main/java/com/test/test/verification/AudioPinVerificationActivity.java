@@ -9,17 +9,18 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.test.test.enrollment.AuthCallback;
 import com.test.test.recorder.WavAudioRecorder;
-import com.test.test.rest.models.AuthResponse;
+import com.test.test.rest.models.enrollment.AuthResponse;
 import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.rest.models.verification.StartVerificationRequest;
 import com.test.test.rest.models.verification.StartVerificationResponse;
-import com.test.test.enrollment.AuthCallback;
 import com.test.test.ui.R;
-import com.test.test.ui.interfaces.ClientInfoCallback;
-import com.test.test.ui.interfaces.StartVerificationCallback;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -50,6 +51,10 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
 
     private VerificationHelper verificationHelper;
 
+    private WavAudioRecorder audioRecorder;
+    private String verificationId;
+
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,8 +63,14 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
         mPinString = "";
 
 
-        verify();
-        //checkVerification();
+        Bundle bundle = getIntent().getExtras();
+        //mToken = bundle.getString("token");
+        //mClientId = bundle.getString("clientId");
+
+
+        mClientId = "b3df334c5588a375ae5327e4d0a81f1b";
+        //verify();
+        checkVerification();
     }
 
     private void inflateComponents(){
@@ -170,6 +181,18 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
         finish.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+//                verificationHelper.uploadVerificationAudio(mToken, verificationId,
+//                        "[0, 500, 1000, 2000]",
+//                        new File(audioRecorder.getFilename()));
+
+                verificationHelper.uploadVerificationAudio(mToken, verificationId,
+                        "[0, 500, 1000, 2000]",
+                        new File(Environment.getExternalStorageDirectory(), "verification.wav"));
+
+
+
+
 //                Bundle bundle = getIntent().getExtras();
 //                String mToken = bundle.getString("token");
 //                String mClientId = bundle.getString("clientId");
@@ -179,9 +202,7 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
     }
 
     private void verify(){
-        Bundle bundle = getIntent().getExtras();
-        mToken = bundle.getString("token");
-        final String mClientId = bundle.getString("clientId");
+        delay(1000);
 
         verificationHelper = new VerificationHelper(getBaseContext());
 
@@ -189,15 +210,17 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             @Override
             public void onSuccess(ClientInfoResponse response) {
                 String status = response.status;
-                String verification_id = response.id;
-                String verification_name = response.name;
+                String client_id = response.id;
+                String client_name = response.name;
 
                 Toast.makeText(getBaseContext(), status, Toast.LENGTH_LONG).show();
 
-                StartVerificationRequest req = new StartVerificationRequest("audiopin", false, 75,
-                        "webapp", "b3df334c5588a375ae5327e4d076acb2", "1234567890", false);
+                StartVerificationRequest verificationRequest =
+                        new StartVerificationRequest("audiopin", false, 75,
+                        "webapp", mClientId, "1234567890", false);
 
-                verificationHelper.startVerification(mToken, req, new StartVerificationCallback() {
+                verificationHelper.startVerification(mToken, verificationRequest,
+                        new StartVerificationCallback() {
                     @Override
                     public void onSuccess(StartVerificationResponse response) {
                         Toast.makeText(getBaseContext(), "Verification started",
@@ -221,22 +244,15 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
 
 
 
-
-
-    private void checkVerification(){
+    private void checkVerification() {
         verificationHelper = new VerificationHelper(getBaseContext());
-
 
         verificationHelper.getAT(new AuthCallback() {
             @Override
             public void onSuccess(AuthResponse response) {
-                String verificationId = "b3df334c5588a375ae5327e4d0956330";
-
                 String token = "Bearer " + response.jwt;
-
-                verificationHelper.uploadVerificationAudio(token, verificationId, "",
-                        new File(Environment.getExternalStorageDirectory(), "verification.wav"));
-
+                mToken = token;
+                verify();
             }
 
             @Override
@@ -244,48 +260,54 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
 
             }
         });
-
-
-
-
     }
 
 
-    private void animate(final StartVerificationResponse response){
 
-        final String verificationId = response.resource;
+
+
+    private void animate(final StartVerificationResponse response){
+        verificationId = response.resource;
         //final String verificationId = response.id;
 
-
         final Timer timer = new Timer();
-        final WavAudioRecorder audioRecorder = new WavAudioRecorder(getBaseContext(), "verification");
+        audioRecorder = new WavAudioRecorder(getBaseContext(), "verification");
         audioRecorder.startRecording();
         timer.scheduleAtFixedRate(new TimerTask() {
             long startTime = System.currentTimeMillis();
             int count = 0;
+
             int duration = response.animation[count].duration;
+            int elaspeTime = 0;
+
+            List<Integer> boundaries = new ArrayList<>();
+
+
             @Override
             public void run() {
                 if (System.currentTimeMillis() - startTime > duration) {
+
+                    if(response.animation[count].is_word_boundary.equalsIgnoreCase("true")){
+                        boundaries.add(elaspeTime);
+                    }
+
+                    elaspeTime += duration;
+
                     count++;
                     if(count >= response.animation.length){
                         timer.cancel();
                         delay(1000);
-
                         audioRecorder.stopRecording();
                         delay(1000);
-
-
-
 //                        verificationHelper.uploadVerificationAudio(mToken, verificationId, "[0, 500]",
 //                                new File(Environment.getExternalStorageDirectory(), "verification.wav"));
 
 
-                        verificationHelper.uploadVerificationAudio(mToken, verificationId, "[0, 500]",
+                        String boundariesStr = new Gson().toJson(boundaries);
+
+                        verificationHelper.uploadVerificationAudio(mToken, verificationId,
+                                boundariesStr,
                                 new File(audioRecorder.getFilename()));
-
-
-
 
 //                        String intervalsStr =  getIntervals(response.animation.enrollment,
 //                                response.prompts);

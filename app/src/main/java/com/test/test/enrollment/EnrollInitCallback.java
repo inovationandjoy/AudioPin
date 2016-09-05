@@ -1,7 +1,6 @@
 package com.test.test.enrollment;
 
-import com.test.test.rest.models.AuthResponse;
-import com.test.test.rest.models.EnrollInitResponse;
+import com.test.test.rest.models.enrollment.EnrollInitResponse;
 
 /**
  * Created by sparvez on 2016-09-01.

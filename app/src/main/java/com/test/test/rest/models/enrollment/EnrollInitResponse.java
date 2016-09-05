@@ -1,7 +1,5 @@
 package com.test.test.rest.models.enrollment;
 
-import com.test.test.rest.models.enrollment.Animation;
-
 /**
  * Created by sparvez on 2016-09-01.
  */
