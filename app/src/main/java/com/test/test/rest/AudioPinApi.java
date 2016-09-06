@@ -116,14 +116,14 @@ public class AudioPinApi {
         return mApiService.getAuthToken(authRequest);
     }
 
-    public Call<EnrollInitResponse> sendEnrollmentInfo(String token, EnrollmentInfo enrollmentInfo){
-        return mApiService.sendEnrollmentInfo(token, enrollmentInfo);
+    public Call<EnrollInitResponse> initEnrollment(String token, EnrollmentInfo enrollmentInfo){
+        return mApiService.initEnrollment(token, enrollmentInfo);
     }
 
-    public Call<ResponseBody> uploadEnrollmentAudio2(String token, String clientId,
+    public Call<ResponseBody> uploadEnrollmentAudio(String token, String clientId,
                                                     String animationStart, RequestBody intervals,
                                                     RequestBody body, String filename){
-        return mApiService.uploadEnrollmentAudio2(token, clientId, animationStart, intervals,
+        return mApiService.uploadEnrollmentAudio(token, clientId, animationStart, intervals,
                 body, filename);
     }
 

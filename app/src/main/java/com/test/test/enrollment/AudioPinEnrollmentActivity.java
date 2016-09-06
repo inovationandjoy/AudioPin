@@ -2,7 +2,6 @@ package com.test.test.enrollment;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -13,6 +12,9 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.test.test.enrollment.interfaces.AuthCallback;
+import com.test.test.enrollment.interfaces.UploadAudioCallback;
+import com.test.test.enrollment.interfaces.EnrollInitCallback;
 import com.test.test.recorder.WavAudioRecorder;
 import com.test.test.rest.AudioPinApiHelper;
 import com.test.test.rest.models.enrollment.AuthRequest;
@@ -21,8 +23,10 @@ import com.test.test.rest.models.enrollment.EnrollInitResponse;
 import com.test.test.rest.models.enrollment.Enrollment;
 import com.test.test.rest.models.enrollment.EnrollmentInfo;
 import com.test.test.rest.models.enrollment.Interval;
+import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.verification.AudioPinVerificationActivity;
 import com.test.test.ui.R;
+import com.test.test.verification.ClientInfoCallback;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -33,18 +37,6 @@ import java.util.TimerTask;
 import java.util.UUID;
 
 public class AudioPinEnrollmentActivity extends AppCompatActivity {
-    private Button mButton0;
-    private Button mButton1;
-    private Button mButton2;
-    private Button mButton3;
-    private Button mButton4;
-    private Button mButton5;
-    private Button mButton6;
-    private Button mButton7;
-    private Button mButton8;
-    private Button mButton9;
-    private Button mButtonStar;
-    private Button mButtonHash;
 
     private String mPinString;
     private TextView mPinView;
@@ -53,178 +45,199 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
     private String mGender;
     private String mToken;
     private String mClientId;
+    private String mKey;
 
+    private EnrollmentHelper mEnrollmentHelper;
+    private EnrollInitResponse mResponse;
+    private WavAudioRecorder mAudioRecorder;
 
-    EnrollmentHelper enrollmentHelper;
+    public enum Operation {
+        TOKEN,
+        INIT_ENROLL,
+        ANIMATE,
+        UPLOAD,
+        INFO
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enrollment);
-        inflateComponents();
+        inflateUIComponents();
         mPinString = "";
         mGender = "M";
+        mEnrollmentHelper = new EnrollmentHelper(getBaseContext());
+        mAudioRecorder = new WavAudioRecorder(getBaseContext(), "enrollment");
+    }
 
-
-
-
-        File ffff = new File(getExternalDir(), "YYY");
-        if(!ffff.exists()){
-            ffff.mkdirs();
+    /**
+     * Inflate the widgets and listen events.
+     */
+    private void inflateUIComponents(){
+        Button button0 = (Button) findViewById(R.id.button0);
+        if(button0 != null) {
+            button0.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "0";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
         }
-
-    }
-
-
-
-    private String getExternalDir() {
-        File externalDir = new File(Environment.getExternalStorageDirectory().toString());
-        if (!externalDir.canWrite())
-            externalDir = new File(getBaseContext().getFilesDir().getAbsolutePath());
-        return externalDir.getAbsolutePath();
-    }
-
-
-
-    private void inflateComponents(){
-        mButton0 = (Button)findViewById(R.id.button0);
-        mButton0.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="0";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
-        mButton1 = (Button)findViewById(R.id.button1);
-        mButton1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="1";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
-        mButton2 = (Button)findViewById(R.id.button2);
-        mButton2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="2";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
-        mButton3 = (Button)findViewById(R.id.button3);
-        mButton3.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="3";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
-        mButton4 = (Button)findViewById(R.id.button4);
-        mButton4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="4";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
-        mButton5 = (Button)findViewById(R.id.button5);
-        mButton5.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="5";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
-        mButton6 = (Button)findViewById(R.id.button6);
-        mButton6.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="6";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
-        mButton7 = (Button)findViewById(R.id.button7);
-        mButton7.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="7";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
-        mButton8 = (Button)findViewById(R.id.button8);
-        mButton8.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="8";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
-        mButton9 = (Button)findViewById(R.id.button9);
-        mButton9.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="9";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
-
-        mButtonStar = (Button)findViewById(R.id.buttonStar);
-        mButtonStar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="*";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
-
-        mButtonHash = (Button)findViewById(R.id.buttonHash);
-        mButtonHash.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mPinString+="#";
-                mPinView.setText(mPinString);
-                enroll(mPinString);
-            }
-        });
+        Button button1 = (Button) findViewById(R.id.button1);
+        if(button1 != null) {
+            button1.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "1";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
+        }
+        Button button2 = (Button) findViewById(R.id.button2);
+        if(button2 != null) {
+            button2.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "2";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
+        }
+        Button button3 = (Button) findViewById(R.id.button3);
+        if(button3 != null) {
+            button3.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "3";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
+        }
+        Button button4 = (Button) findViewById(R.id.button4);
+        if(button4 != null) {
+            button4.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "4";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
+        }
+        Button button5 = (Button) findViewById(R.id.button5);
+        if(button5 != null) {
+            button5.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "5";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
+        }
+        Button button6 = (Button) findViewById(R.id.button6);
+        if(button6 != null) {
+            button6.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "6";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
+        }
+        Button button7 = (Button) findViewById(R.id.button7);
+        if(button7 != null) {
+            button7.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "7";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
+        }
+        Button button8 = (Button) findViewById(R.id.button8);
+        if(button8 != null) {
+            button8.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "8";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
+        }
+        Button button9 = (Button) findViewById(R.id.button9);
+        if(button9 != null) {
+            button9.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "9";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
+        }
+        Button buttonStar = (Button) findViewById(R.id.buttonStar);
+        if(buttonStar != null) {
+            buttonStar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "*";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
+        }
+        Button buttonHash = (Button) findViewById(R.id.buttonHash);
+        if(buttonHash != null) {
+            buttonHash.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mPinString += "#";
+                    mPinView.setText(mPinString);
+                    enroll(mPinString);
+                }
+            });
+        }
+        Button finish = (Button) findViewById(R.id.buttonFinish);
+        if(finish != null) {
+            finish.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getBaseContext(), AudioPinVerificationActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("token", mToken);
+                    bundle.putString("clientId", mClientId);
+                    intent.putExtras(bundle);
+                    startActivity(intent);
+                }
+            });
+        }
 
         mPinView = (TextView)findViewById(R.id.pinView);
         mEditText = (TextView) findViewById(R.id.editText);
-
         mMFSwitch = (Switch) findViewById(R.id.switchMaleFemale);
-        mMFSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked) {
-                    mMFSwitch.setText("F");
-                    mGender = "F";
-                }else{
-                    mGender = "M";
-                    mMFSwitch.setText("M");
+
+        if(mMFSwitch != null) {
+            mMFSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        mMFSwitch.setText("F");
+                        mGender = "F";
+                    } else {
+                        mGender = "M";
+                        mMFSwitch.setText("M");
+                    }
                 }
-            }
-        });
-        Button finish = (Button) findViewById(R.id.buttonFinish);
-        finish.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getBaseContext(), AudioPinVerificationActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("token", mToken);
-                bundle.putString("clientId", mClientId);
-                intent.putExtras(bundle);
-                startActivity(intent);
-            }
-        });
+            });
+        }
     }
 
     private boolean isConsecutive(String pin){
@@ -233,6 +246,162 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
         if(pin.equalsIgnoreCase("3456")) return true;
         return false;
     }
+
+    /**
+     * To handle different async tasks
+     * @param operation
+     */
+    private void operate(Operation operation){
+        switch(operation){
+            case TOKEN:
+                getAuthToken();
+                break;
+            case INIT_ENROLL:
+                initEnrollment(mKey);
+                break;
+            case ANIMATE:
+                animate(mResponse);
+                break;
+            case UPLOAD:
+                String intervalsStr = getIntervals(mResponse.animation.enrollment,
+                        mResponse.prompts);
+                uploadEnrollmentAudio(intervalsStr);
+                break;
+            case INFO:
+                delay(3000);
+                getClientInfo();
+                break;
+        }
+    }
+
+    /**
+     * Retrieve the authentication token
+     */
+    private void getAuthToken(){
+        AuthRequest authRequest = new AuthRequest(AudioPinApiHelper.USER, AudioPinApiHelper.PASS);
+        mEnrollmentHelper.fetchAuthToken(authRequest, new AuthCallback() {
+            @Override
+            public void onSuccess(AuthResponse response) {
+                Toast.makeText(getBaseContext(), "Received authentication token",
+                        Toast.LENGTH_SHORT).show();
+                mToken = "Bearer " + response.jwt;
+                operate(Operation.INIT_ENROLL);
+            }
+            @Override
+            public void onError(String error) {
+                mPinView.setText("");
+                mPinString = "";
+            }
+        });
+    }
+
+    /**
+     * Initializes enrollment by creating client and returning related information.
+     * @param key pin string
+     */
+    private void initEnrollment(String key){
+        String name = UUID.randomUUID().toString();
+        EnrollmentInfo enrollmentInfo = new EnrollmentInfo(mGender, name, key, "", false);
+        mEnrollmentHelper.initEnrollment(mToken, enrollmentInfo,
+                new EnrollInitCallback() {
+                    @Override
+                    public void onSuccess(EnrollInitResponse response) {
+                        Toast.makeText(getBaseContext(), "Enrollment initialized",
+                                Toast.LENGTH_SHORT).show();
+                        getIntervals(response.animation.enrollment, response.prompts);
+                        mClientId = response.id;
+                        mResponse = response;
+                        operate(Operation.ANIMATE);
+                    }
+                    @Override
+                    public void onError(String error) {
+                        mPinView.setText("");
+                        mPinString = "";
+                    }
+                });
+    }
+
+    /**
+     * Animate the phrases based on the info from server
+     * @param response
+     */
+    private void animate(final EnrollInitResponse response){
+        final Enrollment [] enrollments = response.animation.enrollment;
+        final Timer timer = new Timer();
+        mAudioRecorder.startRecording();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            long startTime = System.currentTimeMillis();
+            int count = 0;
+            int duration = Integer.parseInt(enrollments[count].duration);
+            @Override
+            public void run() {
+                if (System.currentTimeMillis() - startTime > duration) {
+                    count++;
+                    if(count >= enrollments.length){
+                        timer.cancel();
+                        delay(1000);
+                        mAudioRecorder.stopRecording();
+                        delay(1000);
+                        operate(Operation.UPLOAD);
+                        return;
+                    }
+                    duration = Integer.parseInt(enrollments[count].duration);
+                    startTime = System.currentTimeMillis();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mEditText.setText(enrollments[count].instruction);
+                        }
+                    });
+
+                }
+            }
+        }, 0, 10);
+    }
+
+    /**
+     * Uploads enrollment audio
+     * @param intervalsStr string containing interval information
+     */
+    private void uploadEnrollmentAudio(String intervalsStr){
+        mEnrollmentHelper.uploadEnrollmentAudio(mToken, mClientId, intervalsStr,
+                new File(mAudioRecorder.getFilename()), new UploadAudioCallback() {
+                    @Override
+                    public void onSuccess(final String response) {
+                        Toast.makeText(getBaseContext(), response,
+                                Toast.LENGTH_LONG).show();
+                        mPinView.setText("");
+                        mPinString = "";
+                        operate(Operation.INFO);
+                    }
+                    @Override
+                    public void onError(final String error) {
+                        Toast.makeText(getBaseContext(), error,
+                                Toast.LENGTH_SHORT).show();
+                        mPinView.setText("");
+                        mPinString = "";
+                    }
+                });
+    }
+
+    /**
+     * Retrieve the client info to know enrollment status
+     */
+    private void getClientInfo(){
+        mEnrollmentHelper.fetchClientInfo(mToken, mClientId, new ClientInfoCallback() {
+            @Override
+            public void onSuccess(ClientInfoResponse response) {
+                String status = response.status;
+                Toast.makeText(getBaseContext(), status, Toast.LENGTH_LONG).show();
+            }
+            @Override
+            public void onError(String error) {
+
+            }
+        });
+    }
+
 
     private void enroll(String key){
         if(key == null || key.isEmpty() || key.length() <= 3 ){
@@ -245,102 +414,8 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                     "Pin must not be a sequence.", Toast.LENGTH_SHORT).show();
             return;
         }
-        enrollmentHelper = new EnrollmentHelper(getBaseContext());
-        AuthRequest authRequest = new AuthRequest(AudioPinApiHelper.USER, AudioPinApiHelper.PASS);
-        String name = UUID.randomUUID().toString();
-        final EnrollmentInfo enrollmentInfo = new EnrollmentInfo(mGender, name, key, "", false);
-        enrollmentHelper.fetchAuthToken(authRequest, new AuthCallback() {
-            @Override
-            public void onSuccess(AuthResponse response) {
-                Toast.makeText(getBaseContext(), "Received authentication token",
-                        Toast.LENGTH_SHORT).show();
-                final String token = "Bearer " + response.jwt;
-                mToken = token;
-                enrollmentHelper.initializeEnrollmentInfo("Bearer " + response.jwt, enrollmentInfo,
-                        new EnrollInitCallback() {
-                    @Override
-                    public void onSuccess(EnrollInitResponse response) {
-                        Toast.makeText(getBaseContext(), "Enrollment initialized",
-                                Toast.LENGTH_SHORT).show();
-                        getIntervals(response.animation.enrollment, response.prompts);
-                        mClientId = response.id;
-                        animate(response, token, response.id);
-                    }
-                    @Override
-                    public void onError(String error) {
-                        mPinView.setText("");
-                        mPinString = "";
-                    }
-                });
-            }
-            @Override
-            public void onError(String error) {
-                mPinView.setText("");
-                mPinString = "";
-            }
-        });
-    }
-
-    private void animate(final EnrollInitResponse response,
-                         final String token, final String clientId){
-        final Enrollment [] enrollments = response.animation.enrollment;
-        final Timer timer = new Timer();
-
-
-        final WavAudioRecorder audioRecorder = new WavAudioRecorder(getBaseContext(), "enrollment");
-
-
-        audioRecorder.startRecording();
-        timer.scheduleAtFixedRate(new TimerTask() {
-            long startTime = System.currentTimeMillis();
-            int count = 0;
-            int duration = Integer.parseInt(enrollments[count].duration);
-            @Override
-            public void run() {
-                if (System.currentTimeMillis() - startTime > duration) {
-                    count++;
-                    if(count >= enrollments.length){
-                        timer.cancel();
-                        delay(1000);
-                        audioRecorder.stopRecording();
-                        delay(1000);
-                        String intervalsStr =  getIntervals(response.animation.enrollment,
-                                response.prompts);
-                        enrollmentHelper.uploadEnrollmentAudio(token, clientId, intervalsStr,
-                                new File(audioRecorder.getFilename()), new EnrollCallback() {
-                                    @Override
-                                    public void onSuccess(final String response) {
-                                        Toast.makeText(getBaseContext(), response,
-                                                Toast.LENGTH_LONG).show();
-                                        mPinView.setText("");
-                                        mPinString = "";
-                                    }
-                                    @Override
-                                    public void onError(final String error) {
-                                        runOnUiThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                Toast.makeText(getBaseContext(), error,
-                                                        Toast.LENGTH_SHORT).show();
-                                                mPinView.setText("");
-                                                mPinString = "";
-                                            }
-                                        });
-                                    }
-                                });
-                        return;
-                    }
-                    duration = Integer.parseInt(enrollments[count].duration);
-                    startTime = System.currentTimeMillis();
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mEditText.setText(enrollments[count].instruction);
-                        }
-                    });
-                }
-            }
-        }, 0, 10);
+        mKey = key;
+        operate(Operation.TOKEN);
     }
 
     private void delay(long time){
@@ -359,7 +434,7 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
         for(Enrollment enrollment: enrollments){
             String instruction = enrollment.instruction;
             Long animDuration = Long.parseLong(enrollment.duration);
-            if(promptsList == null || promptsList.isEmpty()){
+            if(promptsList.isEmpty()){
                 return null;
             }
             if(instruction == null || instruction.isEmpty()){
@@ -376,7 +451,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
         List<Interval> intervalList = Arrays.asList(intervals);
         Gson gson = new Gson();
         Type type = new TypeToken<List<Interval>>(){}.getType();
-        String intervalStr = gson.toJson(intervalList, type);
-        return intervalStr;
+        return gson.toJson(intervalList, type);
     }
 }

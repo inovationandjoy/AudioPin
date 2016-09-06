@@ -2,12 +2,17 @@ package com.test.test.enrollment;
 
 import android.content.Context;
 
+import com.test.test.enrollment.interfaces.AuthCallback;
+import com.test.test.enrollment.interfaces.UploadAudioCallback;
+import com.test.test.enrollment.interfaces.EnrollInitCallback;
 import com.test.test.rest.AudioPinApi;
 import com.test.test.rest.models.enrollment.AuthRequest;
 import com.test.test.rest.models.enrollment.AuthResponse;
 import com.test.test.rest.models.enrollment.EnrollInitResponse;
 import com.test.test.rest.models.enrollment.EnrollmentInfo;
+import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.utils.StringFormatter;
+import com.test.test.verification.ClientInfoCallback;
 
 import java.io.File;
 import java.util.Date;
@@ -40,6 +45,11 @@ public class EnrollmentHelper {
     public final static int ENROLL_UNSUPPORTED_TYPE = 415;
     public final static int ENROLL_INTERNAL_ERROR = 500;
     public final static int ENROLL_SUCCESS = 201;
+
+    public static final int CLIENT_OK = 200;
+    public static final int CLIENT_UNAUTHORIZED = 401;
+    public static final int CLIENT_FORBIDDEN = 403;
+    public static final int CLIENT_NOT_FOUND = 404;
 
     private Context mContext;
 
@@ -74,10 +84,10 @@ public class EnrollmentHelper {
                 });
     }
 
-    public void initializeEnrollmentInfo(String token, EnrollmentInfo enrollmentInfo,
+    public void initEnrollment(String token, EnrollmentInfo enrollmentInfo,
                                          final EnrollInitCallback callback){
         AudioPinApi.getInstance()
-                .sendEnrollmentInfo(token, enrollmentInfo)
+                .initEnrollment(token, enrollmentInfo)
                 .enqueue(new Callback<EnrollInitResponse>() {
                     @Override
                     public void onResponse(Call<EnrollInitResponse> call,
@@ -118,9 +128,9 @@ public class EnrollmentHelper {
     }
 
     public void uploadEnrollmentAudio(String token, String clientId, String intervalsStr,
-                                      final File theFile, final EnrollCallback callback){
+                                      final File theFile, final UploadAudioCallback callback){
         AudioPinApi.getInstance()
-                .uploadEnrollmentAudio2(token, clientId,
+                .uploadEnrollmentAudio(token, clientId,
                         StringFormatter.format(new Date(System.currentTimeMillis()), true),
                         RequestBody.create(MediaType.parse("application/json"), intervalsStr),
                         RequestBody.create(MediaType.parse("audio/wav"), theFile),
@@ -151,7 +161,7 @@ public class EnrollmentHelper {
                                 callback.onError("Enrollment internal error");
                                 break;
                             case ENROLL_SUCCESS:
-                                callback.onSuccess("Successfully enrolled!");
+                                callback.onSuccess("Successfully upload audio!");
                                 break;
                             default:
                                 break;
@@ -163,4 +173,38 @@ public class EnrollmentHelper {
                     }
                 });
     }
+
+    public void fetchClientInfo(String token, String clientId, final ClientInfoCallback callback){
+        AudioPinApi.getInstance()
+                .getClientInfo(token, clientId)
+                .enqueue(new Callback<ClientInfoResponse>() {
+                    @Override
+                    public void onResponse(Call<ClientInfoResponse> call,
+                                           retrofit2.Response<ClientInfoResponse> response) {
+                        int statusCode = response.code();
+                        switch(statusCode){
+                            case CLIENT_OK:
+                                callback.onSuccess(response.body());
+                                break;
+                            case CLIENT_UNAUTHORIZED:
+                                callback.onError("Client Unauthorized");
+                                break;
+                            case CLIENT_FORBIDDEN:
+                                callback.onError("Client Forbidden");
+                                break;
+                            case CLIENT_NOT_FOUND:
+                                callback.onError("Client not found");
+                                break;
+                            default:
+                                callback.onError("Authorization unknown");
+                                break;
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ClientInfoResponse> call, Throwable t) {
+                        callback.onError("Client info retrieval exception.");
+                    }
+                });
+    }
+
 }

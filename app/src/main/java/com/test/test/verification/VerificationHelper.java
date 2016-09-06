@@ -2,7 +2,7 @@ package com.test.test.verification;
 
 import android.content.Context;
 
-import com.test.test.enrollment.AuthCallback;
+import com.test.test.enrollment.interfaces.AuthCallback;
 import com.test.test.rest.AudioPinApi;
 import com.test.test.rest.AudioPinApiHelper;
 import com.test.test.rest.models.enrollment.AuthRequest;

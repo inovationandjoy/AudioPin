@@ -35,11 +35,11 @@ public interface AudioPinApiInterface {
     Call<AuthResponse> getAuthToken(@Body AuthRequest authRequest);
 
     @POST("/api/v1/enrollments")
-    Call<EnrollInitResponse> sendEnrollmentInfo(@Header("Authorization") String authorization,
+    Call<EnrollInitResponse> initEnrollment(@Header("Authorization") String authorization,
                                                 @Body EnrollmentInfo enrollmentInfo);
     @Multipart
     @PUT("/api/v1/enrollments/{id}")
-    Call<ResponseBody> uploadEnrollmentAudio2(@Header("Authorization") String authorization,
+    Call<ResponseBody> uploadEnrollmentAudio(@Header("Authorization") String authorization,
                                              @Path("id") String id,
                                              @Part("animation_start") String start,
                                              @Part("intervals") RequestBody intervals,

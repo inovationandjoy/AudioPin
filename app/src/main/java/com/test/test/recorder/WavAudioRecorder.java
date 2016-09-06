@@ -2,6 +2,7 @@ package com.test.test.recorder;
 
 /**
  * Created by sparvez on 2016-09-02.
+ * Records audio in wav format.
  */
 import android.content.Context;
 import android.media.AudioFormat;
@@ -18,14 +19,11 @@ import java.io.IOException;
 public class WavAudioRecorder {
     private static final int RECORDER_BPP = 8;
     private static final String AUDIO_RECORDER_FILE_EXT_WAV = ".wav";
-    private static final String AUDIO_RECORDER_FOLDER = "WavAudioRecorderZZZ";
+    private static final String AUDIO_RECORDER_FOLDER = "WavAudioRecorder";
     private static final String AUDIO_RECORDER_TEMP_FILE = "record_temp.raw";
     private static final int RECORDER_SAMPLERATE = 11000;
-
     private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_STEREO;
-    //private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
     private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_8BIT;
-
 
     private AudioRecord recorder = null;
     private int bufferSize = 0;
@@ -42,17 +40,22 @@ public class WavAudioRecorder {
         this.mRecFileName = recFileName;
     }
 
+    /**
+     * Create recording file name
+     * @return absolute path for the recording file.
+     */
     public String getFilename(){
-        //String filepath = mContext.getCacheDir().getPath();
         String filepath = getExternalDir();
         File file = new File(filepath,AUDIO_RECORDER_FOLDER);
         if(!file.exists()){
             file.mkdirs();
         }
-        //return (file.getAbsolutePath() + "/" + "enrollment" + AUDIO_RECORDER_FILE_EXT_WAV);
         return (file.getAbsolutePath() + "/" + mRecFileName + AUDIO_RECORDER_FILE_EXT_WAV);
     }
 
+    /**
+     * @return  absolute path of the external directory
+     */
     private String getExternalDir() {
         File externalDir = new File(Environment.getExternalStorageDirectory().toString());
         if (!externalDir.canWrite())
@@ -60,10 +63,11 @@ public class WavAudioRecorder {
         return externalDir.getAbsolutePath();
     }
 
-
-
+    /**
+     * @return the absolute path for the temporary file
+     */
     private String getTempFilename(){
-        String filepath = Environment.getExternalStorageDirectory().getPath();
+        String filepath = getExternalDir();
         File file = new File(filepath,AUDIO_RECORDER_FOLDER);
         if(!file.exists()){
             file.mkdirs();
@@ -74,6 +78,9 @@ public class WavAudioRecorder {
         return (file.getAbsolutePath() + "/" + AUDIO_RECORDER_TEMP_FILE);
     }
 
+    /**
+     * Starts recording
+     */
     public void startRecording(){
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 RECORDER_SAMPLERATE, RECORDER_CHANNELS,RECORDER_AUDIO_ENCODING, bufferSize);
@@ -90,6 +97,9 @@ public class WavAudioRecorder {
         recordingThread.start();
     }
 
+    /**
+     * Write data to file
+     */
     private void writeAudioDataToFile(){
         byte data[] = new byte[bufferSize];
         String filename = getTempFilename();
@@ -119,6 +129,9 @@ public class WavAudioRecorder {
         }
     }
 
+    /**
+     * Stop recording
+     */
     public void stopRecording(){
         if(null != recorder){
             isRecording = false;
@@ -133,12 +146,20 @@ public class WavAudioRecorder {
         deleteTempFile();
     }
 
+    /**
+     * Delete temp file
+     */
     private void deleteTempFile() {
         File file = new File(getTempFilename());
         file.delete();
     }
 
-    private void copyWaveFile(String inFilename,String outFilename){
+    /**
+     *
+     * @param inFilename
+     * @param outFilename
+     */
+    private void copyWaveFile(String inFilename, String outFilename){
         FileInputStream in = null;
         FileOutputStream out = null;
         long totalAudioLen = 0;
@@ -152,10 +173,8 @@ public class WavAudioRecorder {
             out = new FileOutputStream(outFilename);
             totalAudioLen = in.getChannel().size();
             totalDataLen = totalAudioLen + 36;
-
             WriteWaveFileHeader(out, totalAudioLen, totalDataLen,
                     longSampleRate, channels, byteRate);
-
             while(in.read(data) != -1){
                 out.write(data);
             }
@@ -168,6 +187,9 @@ public class WavAudioRecorder {
         }
     }
 
+    /**
+     * Write  file header
+     */
     private void WriteWaveFileHeader(
             FileOutputStream out, long totalAudioLen,
             long totalDataLen, long longSampleRate, int channels,

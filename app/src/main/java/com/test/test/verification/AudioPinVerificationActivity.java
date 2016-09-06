@@ -9,7 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.test.test.enrollment.AuthCallback;
+import com.test.test.enrollment.interfaces.AuthCallback;
 import com.test.test.recorder.WavAudioRecorder;
 import com.test.test.rest.models.enrollment.AuthResponse;
 import com.test.test.rest.models.verification.ClientInfoResponse;
