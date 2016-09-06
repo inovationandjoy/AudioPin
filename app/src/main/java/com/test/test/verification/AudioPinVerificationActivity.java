@@ -1,7 +1,6 @@
 package com.test.test.verification;
 
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -48,11 +47,12 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
     private Button mButton9;
     private Button mButtonStar;
     private Button mButtonHash;
+    private Button mButtonfinish;
 
     private VerificationHelper verificationHelper;
 
     private WavAudioRecorder audioRecorder;
-    private String verificationId;
+    private String mVerificationResourceId;
 
 
     @Override
@@ -62,14 +62,13 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
         inflateComponents();
         mPinString = "";
 
-
         Bundle bundle = getIntent().getExtras();
         //mToken = bundle.getString("token");
         //mClientId = bundle.getString("clientId");
 
-
         mClientId = "b3df334c5588a375ae5327e4d0a81f1b";
         //verify();
+        mDisplay.setText("Verification");
         checkVerification();
     }
 
@@ -80,7 +79,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mPinString+="0";
-                verify(mPinString);
             }
         });
         mButton1 = (Button)findViewById(R.id.verification_button1);
@@ -88,7 +86,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mPinString+="1";
-                verify(mPinString);
             }
         });
         mButton2 = (Button)findViewById(R.id.verification_button2);
@@ -96,7 +93,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mPinString+="2";
-                verify(mPinString);
             }
         });
         mButton3 = (Button)findViewById(R.id.verification_button3);
@@ -104,7 +100,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mPinString+="3";
-                verify(mPinString);
             }
         });
         mButton4 = (Button)findViewById(R.id.verification_button4);
@@ -112,7 +107,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mPinString+="4";
-                verify(mPinString);
             }
         });
         mButton5 = (Button)findViewById(R.id.verification_button5);
@@ -120,7 +114,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mPinString+="5";
-                verify(mPinString);
             }
         });
         mButton6 = (Button)findViewById(R.id.verification_button6);
@@ -128,7 +121,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mPinString+="6";
-                verify(mPinString);
             }
         });
         mButton7 = (Button)findViewById(R.id.verification_button7);
@@ -136,7 +128,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mPinString+="7";
-                verify(mPinString);
             }
         });
         mButton8 = (Button)findViewById(R.id.verification_button8);
@@ -144,7 +135,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mPinString+="8";
-                verify(mPinString);
             }
         });
         mButton9 = (Button)findViewById(R.id.verification_button9);
@@ -152,51 +142,33 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mPinString+="9";
-                verify(mPinString);
             }
         });
-
         mButtonStar = (Button)findViewById(R.id.verification_button_star);
         mButtonStar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mPinString+="*";
-                verify(mPinString);
             }
         });
-
         mButtonHash = (Button)findViewById(R.id.verification_button_hash);
         mButtonHash.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mPinString+="#";
-                verify(mPinString);
             }
         });
-
         mDisplay = (TextView) findViewById(R.id.verification_display);
-
-
-        Button finish = (Button) findViewById(R.id.verification_button_finish);
-        finish.setOnClickListener(new View.OnClickListener() {
+        mButtonfinish = (Button) findViewById(R.id.verification_button_finish);
+        mButtonfinish.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-//                verificationHelper.uploadVerificationAudio(mToken, verificationId,
-//                        "[0, 500, 1000, 2000]",
-//                        new File(audioRecorder.getFilename()));
-
-                verificationHelper.uploadVerificationAudio(mToken, verificationId,
-                        "[0, 500, 1000, 2000]",
-                        new File(Environment.getExternalStorageDirectory(), "verification.wav"));
-
-
-
-
-//                Bundle bundle = getIntent().getExtras();
-//                String mToken = bundle.getString("token");
-//                String mClientId = bundle.getString("clientId");
-//                new VerificationHelper(getBaseContext()).fetchClientInfo(mToken, mClientId, null );
+                if(mButtonfinish.getText().toString().equalsIgnoreCase("Try again")){
+                    mButtonfinish.setText("Finish");
+                    checkVerification();
+                }else
+                    finish();
             }
         });
     }
@@ -242,8 +214,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
         });
     }
 
-
-
     private void checkVerification() {
         verificationHelper = new VerificationHelper(getBaseContext());
 
@@ -262,77 +232,37 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
         });
     }
 
-
-
-
-
     private void animate(final StartVerificationResponse response){
-        verificationId = response.resource;
-        //final String verificationId = response.id;
-
-        final Timer timer = new Timer();
+        mVerificationResourceId = response.resource;
         audioRecorder = new WavAudioRecorder(getBaseContext(), "verification");
         audioRecorder.startRecording();
+
+        final Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             long startTime = System.currentTimeMillis();
             int count = 0;
-
             int duration = response.animation[count].duration;
             int elaspeTime = 0;
-
             List<Integer> boundaries = new ArrayList<>();
-
 
             @Override
             public void run() {
                 if (System.currentTimeMillis() - startTime > duration) {
-
                     if(response.animation[count].is_word_boundary.equalsIgnoreCase("true")){
                         boundaries.add(elaspeTime);
                     }
-
                     elaspeTime += duration;
-
                     count++;
                     if(count >= response.animation.length){
                         timer.cancel();
                         delay(1000);
                         audioRecorder.stopRecording();
                         delay(1000);
-//                        verificationHelper.uploadVerificationAudio(mToken, verificationId, "[0, 500]",
-//                                new File(Environment.getExternalStorageDirectory(), "verification.wav"));
-
-
                         String boundariesStr = new Gson().toJson(boundaries);
-
-                        verificationHelper.uploadVerificationAudio(mToken, verificationId,
-                                boundariesStr,
-                                new File(audioRecorder.getFilename()));
-
-//                        String intervalsStr =  getIntervals(response.animation.enrollment,
-//                                response.prompts);
-//                        enrollmentHelper.uploadEnrollmentAudio(token, clientId, intervalsStr,
-//                                new File(audioRecorder.getFilename()), new EnrollCallback() {
-//                                    @Override
-//                                    public void onSuccess(final String response) {
-//                                        Toast.makeText(getBaseContext(), response,
-//                                                Toast.LENGTH_LONG).show();
-//                                        mPinView.setText("");
-//                                        mPinString = "";
-//                                    }
-//                                    @Override
-//                                    public void onError(final String error) {
-//                                        runOnUiThread(new Runnable() {
-//                                            @Override
-//                                            public void run() {
-//                                                Toast.makeText(getBaseContext(), error,
-//                                                        Toast.LENGTH_SHORT).show();
-//                                                mPinView.setText("");
-//                                                mPinString = "";
-//                                            }
-//                                        });
-//                                    }
-//                                });
+//                        verificationHelper.uploadVerificationAudio(mToken, mVerificationResourceId,
+//                                boundariesStr,
+//                                new File(audioRecorder.getFilename()));
+                        uploadVerificationAudio(boundariesStr);
                         return;
                     }
                     duration = response.animation[count].duration;
@@ -342,7 +272,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             showPinMapping(pin_mapping);
-
                         }
                     });
                 }
@@ -350,6 +279,47 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
         }, 0, 10);
     }
 
+    private void uploadVerificationAudio(String boundariesStr){
+        verificationHelper.uploadVerificationAudio(mToken, mVerificationResourceId,
+                boundariesStr,
+                new File(audioRecorder.getFilename()), new AudioUploadCallBack() {
+                    @Override
+                    public void onSuccess(String response) {
+                        Toast.makeText(getBaseContext(), response, Toast.LENGTH_SHORT).show();
+
+                        delay(5000);
+
+                        isAuthenticate();
+                    }
+                    @Override
+                    public void onError(String error) {
+                        Toast.makeText(getBaseContext(), error, Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
+    private void isAuthenticate(){
+        verificationHelper.getVerificationInfo(mToken, mVerificationResourceId, new VerificationInfoCallback() {
+            @Override
+            public void onSuccess(String response) {
+                mDisplay.setText(response);
+
+                if(response.equalsIgnoreCase("--Unauthorized--")){
+                    mButtonfinish.setText("Try again");
+                }else{
+                    mButtonfinish.setText("Finish");
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+
+            }
+        });
+
+
+    }
 
     private void delay(long time){
         try {
@@ -361,8 +331,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
 
     private void showPinMapping(Object pinMap){
         Map<Integer, String> map = (Map)pinMap;
-
-
         mButton0.setText("0" + "\n" + map.get("0"));
         mButton1.setText("1" + "\n" + map.get("1"));
         mButton2.setText("2" + "\n" + map.get("2"));
@@ -375,12 +343,6 @@ public class AudioPinVerificationActivity extends AppCompatActivity {
         mButton9.setText("9" + "\n" + map.get("9"));
         mButtonStar.setText("*" + "\n" + map.get("*"));
         mButtonHash.setText("#" + "\n" + map.get("#"));
-
-    }
-
-
-    private void verify(String input){
-        String pin = input;
     }
 
 }

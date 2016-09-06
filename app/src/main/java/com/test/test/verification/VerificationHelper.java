@@ -10,6 +10,7 @@ import com.test.test.rest.models.enrollment.AuthResponse;
 import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.rest.models.verification.StartVerificationRequest;
 import com.test.test.rest.models.verification.StartVerificationResponse;
+import com.test.test.rest.models.verification.VerificationInfoResponse;
 import com.test.test.utils.StringFormatter;
 
 import java.io.File;
@@ -17,7 +18,6 @@ import java.util.Date;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 
@@ -37,6 +37,9 @@ public class VerificationHelper {
     public static final int START_VERIFICATION_FORBIDDEN = 403;
     public static final int START_VERIFICATION_NOTFOUND = 404;
     public static final int START_VERIFICATION_INTERNAL_ERROR = 500;
+
+    public static final int UPLOAD_VERIFICATION_AUDIO_OK = 202;
+    public static final int VERIFICATION_INFO_RECEIVED = 200;
 
     private Context mContext;
 
@@ -117,7 +120,7 @@ public class VerificationHelper {
 
 
     public void uploadVerificationAudio(String token, String verificationId, String boundaryStr,
-                                      final File theFile){
+                                      final File theFile, final AudioUploadCallBack callBack){
         AudioPinApi.getInstance()
                 .uploadVerificationAudio(token, verificationId,
                         StringFormatter.format(new Date(System.currentTimeMillis()), true),
@@ -129,30 +132,52 @@ public class VerificationHelper {
                     @Override
                     public void onResponse(Call<Void> call,
                                            retrofit2.Response<Void> response) {
-
                         int statusCode = response.code();
-                        int abc = 0;
+                        switch(statusCode){
+                            case UPLOAD_VERIFICATION_AUDIO_OK:
+                                callBack.onSuccess("Verification audio uploaded.");
+                                break;
+                            default:
+                                callBack.onError("Cannot upload verification audio");
+                                break;
+                        }
                     }
                     @Override
                     public void onFailure(Call<Void> call, Throwable t) {
-
+                        callBack.onError("Exception updating verification audio");
                     }
                 });
     }
 
-    public void getVerificationInfo(String token, String verificationId){
+
+    public void getVerificationInfo(String token, String verificationId,
+                                    final VerificationInfoCallback callback){
         AudioPinApi.getInstance()
                 .getVerificationInfo(token, verificationId)
-                .enqueue(new Callback<ResponseBody>() {
+                .enqueue(new Callback<VerificationInfoResponse>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call,
-                                           retrofit2.Response<ResponseBody> response) {
-
+                    public void onResponse(Call<VerificationInfoResponse> call,
+                                           retrofit2.Response<VerificationInfoResponse> response) {
                         int statusCode = response.code();
-                        int abc = 0;
+                        switch(statusCode) {
+                            case VERIFICATION_INFO_RECEIVED:
+                                if(response.body().verified != null){
+                                    if(response.body().verified){
+                                        callback.onSuccess("**Authorized**");
+                                    }else{
+                                        callback.onSuccess("--Unauthorized--");
+                                    }
+                                }else {
+                                    callback.onSuccess("--Unauthorized--");
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+
                     }
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    public void onFailure(Call<VerificationInfoResponse> call, Throwable t) {
 
                     }
                 });
@@ -169,12 +194,8 @@ public class VerificationHelper {
                     @Override
                     public void onResponse(Call<AuthResponse> call,
                                            retrofit2.Response<AuthResponse> response) {
-
                         int statusCode = response.code();
-                        int abc = 0;
-
                         cb.onSuccess(response.body());
-
                     }
                     @Override
                     public void onFailure(Call<AuthResponse> call, Throwable t) {

@@ -1,6 +1,7 @@
 package com.test.test.rest;
 
 import android.content.res.Resources;
+
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -14,6 +15,7 @@ import com.test.test.rest.models.enrollment.EnrollmentInfo;
 import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.rest.models.verification.StartVerificationRequest;
 import com.test.test.rest.models.verification.StartVerificationResponse;
+import com.test.test.rest.models.verification.VerificationInfoResponse;
 
 import java.io.IOException;
 import java.util.Date;
@@ -150,7 +152,7 @@ public class AudioPinApi {
     }
 
 
-    public Call<ResponseBody> getVerificationInfo(String token, String verificationId){
+    public Call<VerificationInfoResponse> getVerificationInfo(String token, String verificationId){
         return mApiService.getVerificationInfo(token, verificationId);
     }
 

@@ -7,6 +7,7 @@ import com.test.test.rest.models.enrollment.EnrollmentInfo;
 import com.test.test.rest.models.verification.ClientInfoResponse;
 import com.test.test.rest.models.verification.StartVerificationRequest;
 import com.test.test.rest.models.verification.StartVerificationResponse;
+import com.test.test.rest.models.verification.VerificationInfoResponse;
 
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
@@ -68,8 +69,8 @@ public interface AudioPinApiInterface {
 
 
     @GET(" /api/v1/verifications/{verification_id}")
-            Call<ResponseBody> getVerificationInfo(@Header("Authorization") String authorization,
-                                                   @Path("verification_id") String clientId );
+            Call<VerificationInfoResponse> getVerificationInfo(@Header("Authorization") String authorization,
+                                                               @Path("verification_id") String clientId );
 
 
 
