@@ -29,9 +29,6 @@ public interface AudioPinApiInterface {
 
     //Enrollment
     @POST("/api/v1/auth")
-    Call<Object> authToken(@Body AuthRequest authRequest);
-
-    @POST("/api/v1/auth")
     Call<AuthResponse> getAuthToken(@Body AuthRequest authRequest);
 
     @POST("/api/v1/enrollments")
@@ -55,7 +52,6 @@ public interface AudioPinApiInterface {
     Call<StartVerificationResponse> startVerification(@Header("Authorization") String authorization,
                                                       @Body StartVerificationRequest clientId );
 
-
     @Multipart
     @PUT("/api/v1/verifications/{id}")
     Call<Void> uploadVerificationAudio(@Header("Authorization") String authorization,
@@ -65,15 +61,7 @@ public interface AudioPinApiInterface {
                                                @Part("verification.wav\"; filename=\"blob") RequestBody body,
                                                @Part("file") String file);
 
-
-
-
     @GET(" /api/v1/verifications/{verification_id}")
             Call<VerificationInfoResponse> getVerificationInfo(@Header("Authorization") String authorization,
                                                                @Path("verification_id") String clientId );
-
-
-
-
-
 }

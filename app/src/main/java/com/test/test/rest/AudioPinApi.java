@@ -36,10 +36,8 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
  * Created by shahed on 27/08/2016.
  */
 public class AudioPinApi {
-
     private AudioPinApiInterface mApiService;
     private Resources mResources;
-
     /**
      * Gets the instance of the api
      * @return returns api instance
@@ -47,7 +45,6 @@ public class AudioPinApi {
     public static AudioPinApi getInstance(){
         return AudioPinApiHolder.instance;
     }
-
     /**
      * Constructor
      */
@@ -60,37 +57,19 @@ public class AudioPinApi {
                     @Override
                     public Response intercept(Chain chain) throws IOException {
                         Request original = chain.request();
-
-
-                        if(original.method().contains("PUT")){
-                            Request.Builder rb = original.newBuilder()
-                                    .header("User-Agent", "android " + "0.15")
-                                    .header("Content-Type", "Multipart/Form")
-                                    //.header("Accept", "application/json")
-                                    .method(original.method(), original.body());
-                            Response res = chain.proceed(rb.build());
-
-                            return res;//chain.proceed(rb.build());
-                        }
-
-
-
                         Request.Builder rb = original.newBuilder()
                                 .header("User-Agent", "android " + "0.15")
                                // .header("Content-Type", "application/json")
                                 .header("Accept", "application/json")
                                 .method(original.method(), original.body());
                         Response res = chain.proceed(rb.build());
-
-                        return res;//chain.proceed(rb.build());
+                        return res;
                     }
                 })
                 .addInterceptor(new CurlInterceptor(new Loggable() {
                     @Override
                     public void log(String message) {
-
                     }
-
                 })).addInterceptor(interceptor)
                 .retryOnConnectionFailure(true))
             .build();
@@ -100,7 +79,6 @@ public class AudioPinApi {
                 .registerTypeAdapter(Date.class, new DateTypeAdapter())
                 .setLenient()
                 .create();
-
 
         Retrofit retrofit = new Retrofit.Builder()
             .baseUrl(AudioPinApiHelper.BASE_URL)
@@ -127,7 +105,6 @@ public class AudioPinApi {
                 body, filename);
     }
 
-
     //Verification
     public Call<ClientInfoResponse> getClientInfo(String authorization, String clientId){
         return mApiService.getClientInfo(authorization, clientId);
@@ -138,22 +115,18 @@ public class AudioPinApi {
         return mApiService.startVerification (authorization, request);
     }
 
-    private static class AudioPinApiHolder {
-        public static final AudioPinApi instance = new AudioPinApi();
-    }
-
-
-    public Call<Void> uploadVerificationAudio(String token, String verificationId,
-                                                     String start,
-                                                     RequestBody word_boundaries,
-                                                     RequestBody body,
+    public Call<Void> uploadVerificationAudio(String token, String verificationId, String start,
+                                                     RequestBody word_boundaries, RequestBody body,
                                                      String filename){
-        return mApiService.uploadVerificationAudio(token, verificationId, start, word_boundaries, body, filename);
+        return mApiService.uploadVerificationAudio(token, verificationId, start, word_boundaries,
+                body, filename);
     }
-
 
     public Call<VerificationInfoResponse> getVerificationInfo(String token, String verificationId){
         return mApiService.getVerificationInfo(token, verificationId);
     }
 
+    private static class AudioPinApiHolder {
+        public static final AudioPinApi instance = new AudioPinApi();
+    }
 }

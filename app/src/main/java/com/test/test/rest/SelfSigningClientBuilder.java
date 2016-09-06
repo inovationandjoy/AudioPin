@@ -22,17 +22,14 @@ public class SelfSigningClientBuilder {
     @SuppressWarnings("null")
     public static OkHttpClient.Builder configureClient(OkHttpClient.Builder client) {
         final TrustManager[] certs = new TrustManager[]{new X509TrustManager() {
-
             @SuppressLint("TrustAllX509TrustManager")
             @Override
             public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
             }
 
             @SuppressLint("TrustAllX509TrustManager")
             @Override
             public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-
             }
 
             @Override
@@ -40,14 +37,12 @@ public class SelfSigningClientBuilder {
                 return new X509Certificate[0];
             }
         }};
-
         SSLContext sslContext = null;
         try {
             sslContext = SSLContext.getInstance("TLSv1.2");
             sslContext.init(null, certs, new SecureRandom());
         } catch (GeneralSecurityException e) {
         }
-
         try {
             final HostnameVerifier hostnameVerifier = new HostnameVerifier() {
                 @Override
@@ -57,7 +52,6 @@ public class SelfSigningClientBuilder {
             };
             if (sslContext != null) {
                 final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-
                 client.hostnameVerifier(hostnameVerifier)
                       .sslSocketFactory(sslSocketFactory);
             }
@@ -65,5 +59,4 @@ public class SelfSigningClientBuilder {
         }
         return client;
     }
-
 }
