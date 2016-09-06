@@ -226,8 +226,7 @@
             android:layout_marginRight="-3dip"
             android:layout_marginTop="-5dip"
             android:layout_marginBottom="-5dip"
-            android:id="@+id/buttonFinish"
-            android:background="#FFFFFF"/>
+            android:id="@+id/buttonFinish" />
 
     </LinearLayout>
 </LinearLayout>

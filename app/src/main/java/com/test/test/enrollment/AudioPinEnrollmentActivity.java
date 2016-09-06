@@ -24,7 +24,6 @@ import com.test.test.rest.models.enrollment.Enrollment;
 import com.test.test.rest.models.enrollment.EnrollmentInfo;
 import com.test.test.rest.models.enrollment.Interval;
 import com.test.test.rest.models.verification.ClientInfoResponse;
-import com.test.test.verification.AudioPinVerificationActivity;
 import com.test.test.ui.R;
 import com.test.test.verification.ClientInfoCallback;
 
@@ -42,10 +41,12 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
     private TextView mPinView;
     private Switch mMFSwitch;
     private TextView mEditText;
+    private Button mFinish;
     private String mGender;
     private String mToken;
     private String mClientId;
     private String mKey;
+    private String mStatus;
 
     private EnrollmentHelper mEnrollmentHelper;
     private EnrollInitResponse mResponse;
@@ -68,6 +69,7 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
         mGender = "M";
         mEnrollmentHelper = new EnrollmentHelper(getBaseContext());
         mAudioRecorder = new WavAudioRecorder(getBaseContext(), "enrollment");
+        mStatus = "";
     }
 
     /**
@@ -81,7 +83,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "0";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
@@ -92,7 +93,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "1";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
@@ -103,7 +103,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "2";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
@@ -114,7 +113,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "3";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
@@ -125,7 +123,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "4";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
@@ -136,7 +133,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "5";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
@@ -147,7 +143,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "6";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
@@ -158,7 +153,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "7";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
@@ -169,7 +163,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "8";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
@@ -180,7 +173,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "9";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
@@ -191,7 +183,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "*";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
@@ -202,21 +193,33 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     mPinString += "#";
                     mPinView.setText(mPinString);
-                    enroll(mPinString);
                 }
             });
         }
-        Button finish = (Button) findViewById(R.id.buttonFinish);
-        if(finish != null) {
-            finish.setOnClickListener(new View.OnClickListener() {
+        mFinish = (Button) findViewById(R.id.buttonFinish);
+        if(mFinish != null) {
+            mFinish.setText("Enroll");
+            mFinish.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(getBaseContext(), AudioPinVerificationActivity.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putString("token", mToken);
-                    bundle.putString("clientId", mClientId);
-                    intent.putExtras(bundle);
-                    startActivity(intent);
+                    if(mFinish.getText().toString().equalsIgnoreCase("Enroll")){
+                        if(mPinString.length() == 4) {
+                            mFinish.setText("Finish");
+                            mFinish.setEnabled(false);
+                            enroll(mPinString);
+                        }else {
+                            Toast.makeText(getBaseContext(), "Key should be 4 chars long",
+                                    Toast.LENGTH_LONG).show();
+                            mPinView.setText("");
+                            mPinString = "";
+                        }
+                    } else if(mFinish.getText().toString().equalsIgnoreCase("Finish")){
+                        Intent data = new Intent();
+                        data.putExtra("status", mStatus);
+                        data.putExtra("clientId", mClientId);
+                        setResult(RESULT_OK,data);
+                        finish();
+                    }
                 }
             });
         }
@@ -392,8 +395,9 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
         mEnrollmentHelper.fetchClientInfo(mToken, mClientId, new ClientInfoCallback() {
             @Override
             public void onSuccess(ClientInfoResponse response) {
-                String status = response.status;
-                Toast.makeText(getBaseContext(), status, Toast.LENGTH_LONG).show();
+                mStatus = response.status;
+                Toast.makeText(getBaseContext(), mStatus, Toast.LENGTH_LONG).show();
+                mFinish.setEnabled(true);
             }
             @Override
             public void onError(String error) {
@@ -404,9 +408,6 @@ public class AudioPinEnrollmentActivity extends AppCompatActivity {
 
 
     private void enroll(String key){
-        if(key == null || key.isEmpty() || key.length() <= 3 ){
-            return;
-        }
         if(isConsecutive(key)){
             mPinView.setText("");
             mPinString = "";
